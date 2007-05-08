@@ -4,6 +4,111 @@
 
 #define ERROR 1
 
+void write_startel(FILE *optr, unsigned char layer)
+{
+	fputc(0x00, optr);
+	fputc(0x04, optr); // 4 bytes long
+	fputc(0x08, optr); // BOUNDARY
+	fputc(0x00, optr); // no data
+
+	fputc(0x00, optr);
+	fputc(0x06, optr); // 6 bytes long
+	fputc(0x0D, optr); // LAYER
+	fputc(0x02, optr); // two byte int
+	fputc(0x00, optr);
+	fputc(layer, optr);
+
+	fputc(0x00, optr);
+	fputc(0x06, optr); // 6 bytes long
+	fputc(0x0E, optr); // DATATYPE
+	fputc(0x02, optr); // two byte int
+	fputc(0x00, optr);
+	fputc(0x00, optr);
+
+	fputc(0x00, optr);
+	fputc(44, optr); // 44 bytes long
+	fputc(0x10, optr); // XY
+	fputc(0x03, optr); // four byte int
+}
+	
+void write_endel(FILE *optr, unsigned long x1, unsigned long y1, unsigned long x2, unsigned long y2)
+{
+	unsigned char x1a, x1b, x1c, x1d;
+	unsigned char x2a, x2b, x2c, x2d;
+	unsigned char y1a, y1b, y1c, y1d;
+	unsigned char y2a, y2b, y2c, y2d;
+
+	x1a = (unsigned char)((x1 >> 0) & 0xFF);
+	x1b = (unsigned char)((x1 >> 8) & 0xFF);
+	x1c = (unsigned char)((x1 >> 16) & 0xFF);
+	x1d = (unsigned char)((x1 >> 24) & 0xFF);
+
+	x2a = (unsigned char)((x2 >> 0) & 0xFF);
+	x2b = (unsigned char)((x2 >> 8) & 0xFF);
+	x2c = (unsigned char)((x2 >> 16) & 0xFF);
+	x2d = (unsigned char)((x2 >> 24) & 0xFF);
+
+	y1a = (unsigned char)((y1 >> 0) & 0xFF);
+	y1b = (unsigned char)((y1 >> 8) & 0xFF);
+	y1c = (unsigned char)((y1 >> 16) & 0xFF);
+	y1d = (unsigned char)((y1 >> 24) & 0xFF);
+
+	y2a = (unsigned char)((y2 >> 0) & 0xFF);
+	y2b = (unsigned char)((y2 >> 8) & 0xFF);
+	y2c = (unsigned char)((y2 >> 16) & 0xFF);
+	y2d = (unsigned char)((y2 >> 24) & 0xFF);
+
+	fputc(x1d, optr); // X1
+	fputc(x1c, optr);
+	fputc(x1b, optr);
+	fputc(x1a, optr);
+	fputc(y1d, optr); // Y1
+	fputc(y1c, optr);
+	fputc(y1b, optr);
+	fputc(y1a, optr);
+
+	fputc(x1d, optr); // X1
+	fputc(x1c, optr);
+	fputc(x1b, optr);
+	fputc(x1a, optr);
+	fputc(y2d, optr); // Y2
+	fputc(y2c, optr);
+	fputc(y2b, optr);
+	fputc(y2a, optr);
+
+	fputc(x2d, optr); // X2
+	fputc(x2c, optr);
+	fputc(x2b, optr);
+	fputc(x2a, optr);
+	fputc(y2d, optr); // Y2
+	fputc(y2c, optr);
+	fputc(y2b, optr);
+	fputc(y2a, optr);
+
+	fputc(x2d, optr); // X2
+	fputc(x2c, optr);
+	fputc(x2b, optr);
+	fputc(x2a, optr);
+	fputc(y1d, optr); // Y1
+	fputc(y1c, optr);
+	fputc(y1b, optr);
+	fputc(y1a, optr);
+
+	fputc(x1d, optr); // X1
+	fputc(x1c, optr);
+	fputc(x1b, optr);
+	fputc(x1a, optr);
+	fputc(y1d, optr); // Y1
+	fputc(y1c, optr);
+	fputc(y1b, optr);
+	fputc(y1a, optr);
+
+	fputc(0x00, optr);
+	fputc(0x04, optr); // 4 bytes long
+	fputc(0x11, optr); // ENDEL
+	fputc(0x00, optr); // no data
+}
+
 int write_gds(const char *infile, const char *outfile)
 {
 	FILE *optr;
@@ -190,122 +295,44 @@ int write_gds(const char *infile, const char *outfile)
 	fputc('s', optr);
 	fputc('\0', optr);
 
-	unsigned char x1a, x1b, x1c, x1d;
-	unsigned char x2a, x2b, x2c, x2d;
-	unsigned char y1a, y1b, y1c, y1d;
-	unsigned char y2a, y2b, y2c, y2d;
 	unsigned long x, y;
 	unsigned long x1, x2, y1, y2;
 	char first = 1;
 	png_byte lastlayer, thislayer;
+	char in_el = 0;
 
 	for(y = 0; y < height; y++){
+		first = 1;
 		for(x = 0; x < width; x++){
 			thislayer = row_pointers[y][x];
-			if(thislayer != 255){
-				if(!first && thislayer != lastlayer){
-					
+			if(!first && thislayer != lastlayer){
+				if(lastlayer != 255){
+					x2 = x * 20;
+					write_endel(optr, x1, y1, x2, y2);
+					in_el = 0;
 				}
-				fputc(0x00, optr);
-				fputc(0x04, optr); // 4 bytes long
-				fputc(0x08, optr); // BOUNDARY
-				fputc(0x00, optr); // no data
-
-				fputc(0x00, optr);
-				fputc(0x06, optr); // 6 bytes long
-				fputc(0x0D, optr); // LAYER
-				fputc(0x02, optr); // two byte int
-				fputc(0x00, optr);
-				fputc(row_pointers[y][x], optr);
-
-				fputc(0x00, optr);
-				fputc(0x06, optr); // 6 bytes long
-				fputc(0x0E, optr); // DATATYPE
-				fputc(0x02, optr); // two byte int
-				fputc(0x00, optr);
-				fputc(0x00, optr);
-
-				fputc(0x00, optr);
-				fputc(44, optr); // 44 bytes long
-				fputc(0x10, optr); // XY
-				fputc(0x03, optr); // four byte int
-
 				x1 = (x + 0) * 20; // 20 == 0.02 * 1000
-				x2 = (x + 1) * 20;
 				y1 = (y + 0) * 20;
 				y2 = (y + 1) * 20;
 
-				x1a = (unsigned char)((x1 >> 0) & 0xFF);
-				x1b = (unsigned char)((x1 >> 8) & 0xFF);
-				x1c = (unsigned char)((x1 >> 16) & 0xFF);
-				x1d = (unsigned char)((x1 >> 24) & 0xFF);
-
-				x2a = (unsigned char)((x2 >> 0) & 0xFF);
-				x2b = (unsigned char)((x2 >> 8) & 0xFF);
-				x2c = (unsigned char)((x2 >> 16) & 0xFF);
-				x2d = (unsigned char)((x2 >> 24) & 0xFF);
-
-				y1a = (unsigned char)((y1 >> 0) & 0xFF);
-				y1b = (unsigned char)((y1 >> 8) & 0xFF);
-				y1c = (unsigned char)((y1 >> 16) & 0xFF);
-				y1d = (unsigned char)((y1 >> 24) & 0xFF);
-
-				y2a = (unsigned char)((y2 >> 0) & 0xFF);
-				y2b = (unsigned char)((y2 >> 8) & 0xFF);
-				y2c = (unsigned char)((y2 >> 16) & 0xFF);
-				y2d = (unsigned char)((y2 >> 24) & 0xFF);
-
-				fputc(x1d, optr); // X1
-				fputc(x1c, optr);
-				fputc(x1b, optr);
-				fputc(x1a, optr);
-				fputc(y1d, optr); // Y1
-				fputc(y1c, optr);
-				fputc(y1b, optr);
-				fputc(y1a, optr);
-
-				fputc(x1d, optr); // X1
-				fputc(x1c, optr);
-				fputc(x1b, optr);
-				fputc(x1a, optr);
-				fputc(y2d, optr); // Y2
-				fputc(y2c, optr);
-				fputc(y2b, optr);
-				fputc(y2a, optr);
-
-				fputc(x2d, optr); // X2
-				fputc(x2c, optr);
-				fputc(x2b, optr);
-				fputc(x2a, optr);
-				fputc(y2d, optr); // Y2
-				fputc(y2c, optr);
-				fputc(y2b, optr);
-				fputc(y2a, optr);
-
-				fputc(x2d, optr); // X2
-				fputc(x2c, optr);
-				fputc(x2b, optr);
-				fputc(x2a, optr);
-				fputc(y1d, optr); // Y1
-				fputc(y1c, optr);
-				fputc(y1b, optr);
-				fputc(y1a, optr);
-
-				fputc(x1d, optr); // X1
-				fputc(x1c, optr);
-				fputc(x1b, optr);
-				fputc(x1a, optr);
-				fputc(y1d, optr); // Y1
-				fputc(y1c, optr);
-				fputc(y1b, optr);
-				fputc(y1a, optr);
-
-				fputc(0x00, optr);
-				fputc(0x04, optr); // 4 bytes long
-				fputc(0x11, optr); // ENDEL
-				fputc(0x00, optr); // no data
-
+				if(thislayer != 255){
+					write_startel(optr, thislayer);
+					in_el = 1;
+				}
 			}
+			if(first && thislayer != 255){
+				write_startel(optr, thislayer);
+				in_el = 1;
+				first = 0;
+				x1 = (x + 0) * 20; // 20 == 0.02 * 1000
+				y1 = (y + 0) * 20;
+				y2 = (y + 1) * 20;
+			}
+			lastlayer = thislayer;
+		}
+		if(in_el){
+			x2 = x * 20;
+			write_endel(optr, x1, y1, x2, y2);
 		}
 	}
 
