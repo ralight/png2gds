@@ -362,15 +362,19 @@ void printusage()
 	printf("png2gds is a program for converting a PNG image file to a GDS2 file. Each pixel in the image that is not the background colour will be represented as a square in the GDS2 file which means that the resulting file will be quite large. Merging the squares into a single shape in your CAD software will remove this issue.\n\n");
 	printf("Usage: png2gds input.png output.gds grid\n\n");
 	printf("Arguments\n");
-	printf(" input.png\t\tThe file to convert into GDS2 format. Indexed palettes are best!\n");
-	printf(" output.gds\t\tThe output file.\n");
-	printf(" gds\t\tFloating point number giving the size in microns that each pixel on the image will be.\n");
-	printf("See http://atchoo.org/tools/png2gds/ for updates.\n");
+	printf(" input.png\tThe file to convert into GDS2 format. Indexed palettes are best!\n");
+	printf(" output.gds\tThe output file.\n");
+	printf(" grid\t\tFloating point number giving the size in microns that each pixel on the image will be.\n");
+	printf("\nSee http://atchoo.org/tools/png2gds/ for updates.\n");
 }
 
 
 int main(int argc, char* argv[])
 {
-	if(argc!=4) return 1;
+	if(argc!=4){
+		printusage();
+		return 1;
+	}
+
 	return write_gds(argv[1], argv[2], atof(argv[3]));
 }

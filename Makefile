@@ -6,7 +6,7 @@ VERSION=20070807
 DISTDIR=${OUT}_${VERSION}
 
 ${OUT} : png2gds.c
-	$(COMPILE) -D$(VERSION) $(INCLUDES) $(LIBS) png2gds.c -o ${OUT}
+	$(COMPILE) -DVERSION=\"$(VERSION)\" $(INCLUDES) $(LIBS) png2gds.c -o ${OUT}
 
 install: ${OUT}
 	install -s ${OUT} /usr/local/bin
