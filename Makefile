@@ -3,7 +3,7 @@ INCLUDES=-I/usr/include/libpng12
 LIBS=-lpng12
 OUT=png2gds
 VERSION=20070807
-DISTDIR=${OUT}_${VERSION}
+DISTDIR=${OUT}-${VERSION}
 
 ${OUT} : png2gds.c
 	$(COMPILE) -DVERSION=\"$(VERSION)\" $(INCLUDES) $(LIBS) png2gds.c -o ${OUT}
@@ -14,7 +14,7 @@ install: ${OUT}
 dist: ${OUT}
 	rm -rf ${DISTDIR}
 	mkdir ${DISTDIR}
-	cp *.c *.h ${DISTDIR}
+	cp png2gds.c ${DISTDIR}
 	cp circ.png ${DISTDIR}
 	cp COPYING ${DISTDIR}
 	cp Makefile ${DISTDIR}
