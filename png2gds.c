@@ -109,7 +109,7 @@ void write_endel(FILE *optr, unsigned long x1, unsigned long y1, unsigned long x
 	fputc(0x00, optr); // no data
 }
 
-int write_gds(const char *infile, const char *outfile)
+int write_gds(const char *infile, const char *outfile, float grid)
 {
 	FILE *optr;
 	FILE *fp = fopen(infile, "rb");
@@ -307,13 +307,13 @@ int write_gds(const char *infile, const char *outfile)
 			thislayer = row_pointers[y][x];
 			if(!first && thislayer != lastlayer){
 				if(lastlayer != 255){
-					x2 = x * 20;
+					x2 = x * 1000 * grid;
 					write_endel(optr, x1, y1, x2, y2);
 					in_el = 0;
 				}
-				x1 = (x + 0) * 20; // 20 == 0.02 * 1000
-				y1 = (y + 0) * 20;
-				y2 = (y + 1) * 20;
+				x1 = (x + 0) * 1000 * grid; // 20 == 0.02 * 1000
+				y1 = (y + 0) * 1000 * grid;
+				y2 = (y + 1) * 1000 * grid;
 
 				if(thislayer != 255){
 					write_startel(optr, thislayer);
@@ -324,14 +324,14 @@ int write_gds(const char *infile, const char *outfile)
 				write_startel(optr, thislayer);
 				in_el = 1;
 				first = 0;
-				x1 = (x + 0) * 20; // 20 == 0.02 * 1000
-				y1 = (y + 0) * 20;
-				y2 = (y + 1) * 20;
+				x1 = (x + 0) * 1000 * grid; // 20 == 0.02 * 1000
+				y1 = (y + 0) * 1000 * grid;
+				y2 = (y + 1) * 1000 * grid;
 			}
 			lastlayer = thislayer;
 		}
 		if(in_el){
-			x2 = x * 20;
+			x2 = x * 1000 * grid;
 			write_endel(optr, x1, y1, x2, y2);
 		}
 	}
@@ -356,5 +356,6 @@ int write_gds(const char *infile, const char *outfile)
 
 int main(int argc, char* argv[])
 {
-	return write_gds(argv[1], argv[2]);
+	if(argc!=4) return 1;
+	return write_gds(argv[1], argv[2], atof(argv[3]));
 }
