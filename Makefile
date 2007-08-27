@@ -9,7 +9,7 @@ ${OUT} : png2gds.c
 	$(COMPILE) -DVERSION=\"$(VERSION)\" $(INCLUDES) $(LIBS) png2gds.c -o ${OUT}
 
 install: ${OUT}
-	install -s ${OUT} /usr/local/bin
+	install -s ${OUT} /usr/local/bin/${OUT}
 
 dist: ${OUT}
 	rm -rf ${DISTDIR}
@@ -18,6 +18,7 @@ dist: ${OUT}
 	cp circ.png ${DISTDIR}
 	cp COPYING ${DISTDIR}
 	cp Makefile ${DISTDIR}
+	cp readme.txt ${DISTDIR}/
 	tar -jcf ${DISTDIR}.tar.bz2 ${DISTDIR}
 
 clean:

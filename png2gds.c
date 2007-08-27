@@ -3,6 +3,7 @@
 #include <png.h>
 
 #define ERROR 1
+#define PNG2GDS_VERSION "20070827"
 
 void write_startel(FILE *optr, unsigned char layer)
 {
@@ -30,7 +31,8 @@ void write_startel(FILE *optr, unsigned char layer)
 	fputc(0x10, optr); // XY
 	fputc(0x03, optr); // four byte int
 }
-	
+
+
 void write_endel(FILE *optr, unsigned long x1, unsigned long y1, unsigned long x2, unsigned long y2)
 {
 	unsigned char x1a, x1b, x1c, x1d;
