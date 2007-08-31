@@ -1,0 +1,105 @@
+.TH "png2gds" "1" "12th July 2007" "" ""
+.SH NAME
+png2gds \- convert png images to gds2 layout files.
+
+.SH SYNOPSIS
+.PP
+png2gds -h
+.PP
+png2gds
+.I [-q] [-e] [-r] equation
+
+.SH DESCRIPTION
+.B png2gds
+is a tool to convert png images with indexed palettes into a gds2 file. It is intended to make adding logos to chip designs much more straightforward. Each pixel will be converted to the gds2 layer according to its palette number, so a pixel with colour number 1 will become gds2 layer 1 and so on. The image is created as a single layout block called png2gds, with each pixel created as a single square in the layout, with the size of the square determined by the grid option given on the command line. It is recommended that after importing into your layout tool, all of the squares are selected and merged. This produces a much smaller layout file and also looks much better, although it has no implications for the actual layout.
+
+.SH OPTIONS
+.IP -h
+Display version, help and contact details.
+.IP -q
+Only display the result (so hide the input and any errors).
+.IP -e
+Display the result in the "1e-3" form rather than using SI prefixes.
+.IP -r
+Display the result in decimal format with neither SI prefixes nor exponent.
+
+
+.SH DIAGNOSTICS
+png2gds attempts to notify the user of as many errors as possible and indicate where those errors are, if they are user input related.
+
+.PP
+If an unknown character is included in the equation, an "unknown token" error will be generated. The error marker points to the invalid character.
+.PP
+.RS
+= 34/3@2
+
+Error: 34/3@2
+           ^ unknown token
+.RE
+
+.PP
+If an invalid number is included, a "bad number" error will be generated. The error marker points to the end of the invalid number.
+.PP
+.RS
+= 3.14.159x2.8^2
+
+Error: 3.14.159x2.8^2
+              ^ bad number
+.RE
+
+.PP
+If the number of open and close brackets do not match up, a "mismatched brackets" error will be generated. The error marker position has no significance.
+.PP
+.RS
+= 5/[[2+3]*9
+
+Error: 5/[[2+3]*9
+                 ^ mismatched brackets
+
+.RE
+
+.PP
+If an operator appears in an invalid position, an "invalid operator" error will be generated. Examples of this include duplicated operators "++" and operators next to closed brackets "+)". The error marker indicates the invalid operator.
+.PP
+.RS
+= 3^^7
+
+Error: 3^^7
+         ^ invalid operator
+.RE
+
+.PP
+If a bracket appears in an invalid position, an "invalid bracket" error will be generated. This type of error often overlaps with other errors, so there will be a number of messages written to the screen. It is best to fix this error first as it will likely be the root cause of the problem. The error marker indicates the invalid bracket.
+.PP
+.RS
+= [2+]3
+ 
+Error: [2+]3
+          ^ invalid bracket
+  
+Error: [2+]3
+            ^ invalid operator
+.RE
+
+.PP
+If png2gds is unable to allocate some memory, an "out of memory" error will be generated.
+
+.PP
+Internal error: If the parser notices two numbers next to each other yet does not generate a "bad number" error, then a "duplicate number" error will be generated. This should never happen.
+
+.PP
+Internal error: If an unknown error code is passed to the error output function, an "unknown error" will be generated and the invalid error code displayed.
+
+.SH EXIT VALUES
+.TP
+.B 0
+.I Success
+.TP
+.B 1
+.I At least one error occurred.
+
+.SH BUGS
+None known...
+
+.SH AUTHOR
+Roger Light <roger@atchoo.org>

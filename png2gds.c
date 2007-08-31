@@ -208,29 +208,15 @@ int write_gds(const char *infile, const char *outfile, float grid)
 	fputc(0x02, optr); // LIBNAME
 	fputc(0x06, optr); // ascii string
 	fputc('P', optr);
-	fputc('H', optr);
-	fputc('I', optr);
-	fputc('L', optr);
-	fputc('I', optr);
-	fputc('P', optr);
+	fputc('N', optr);
+	fputc('G', optr);
+	fputc('2', optr);
+	fputc('G', optr);
+	fputc('D', optr);
 	fputc('S', optr);
 	fputc('.', optr);
 	fputc('D', optr);
 	fputc('B', optr);
-
-	/*fputc(0x00, optr);
-	fputc(0x0B, optr);
-	fputc(0x02, optr); // LIBNAME
-	fputc(0x06, optr); // ascii string
-	fputc('g', optr);
-	fputc('d', optr);
-	fputc('s', optr);
-	fputc('2', optr);
-	fputc('p', optr);
-	fputc('n', optr);
-	fputc('g', optr);
-	//fputs("gds2png", optr); 
-	*/
 
 	fputc(0x00, optr);
 	fputc(0x14, optr);
