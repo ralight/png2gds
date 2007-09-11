@@ -1,9 +1,31 @@
+/*
+ * File: png2gds
+ * Author: Roger Light
+ * Project: png2gds
+ *
+ * This is the main body of the png2gds program.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <png.h>
 
 #define ERROR 1
 #define PNG2GDS_VERSION "20070827"
+#define DBUNITS 1000
 
 void write_startel(FILE *optr, unsigned char layer)
 {
@@ -295,13 +317,13 @@ int write_gds(const char *infile, const char *outfile, float grid)
 			thislayer = row_pointers[y][x];
 			if(!first && thislayer != lastlayer){
 				if(lastlayer != 255){
-					x2 = x * 1000 * grid;
+					x2 = x * DBUNITS * grid;
 					write_endel(optr, x1, y1, x2, y2);
 					in_el = 0;
 				}
-				x1 = (x + 0) * 1000 * grid; // 20 == 0.02 * 1000
-				y1 = (y + 0) * 1000 * grid;
-				y2 = (y + 1) * 1000 * grid;
+				x1 = (x + 0) * DBUNITS * grid;
+				y1 = (y + 0) * DBUNITS * grid;
+				y2 = (y + 1) * DBUNITS * grid;
 
 				if(thislayer != 255){
 					write_startel(optr, thislayer);
@@ -312,14 +334,14 @@ int write_gds(const char *infile, const char *outfile, float grid)
 				write_startel(optr, thislayer);
 				in_el = 1;
 				first = 0;
-				x1 = (x + 0) * 1000 * grid; // 20 == 0.02 * 1000
-				y1 = (y + 0) * 1000 * grid;
-				y2 = (y + 1) * 1000 * grid;
+				x1 = (x + 0) * DBUNITS * grid;
+				y1 = (y + 0) * DBUNITS * grid;
+				y2 = (y + 1) * DBUNITS * grid;
 			}
 			lastlayer = thislayer;
 		}
 		if(in_el){
-			x2 = x * 1000 * grid;
+			x2 = x * DBUNITS * grid;
 			write_endel(optr, x1, y1, x2, y2);
 		}
 	}
