@@ -1,17 +1,17 @@
-COMPILE=gcc -Wall -ggdb
-INCLUDES=-I/usr/include/libpng12
+CC=gcc
+CFLAGS=-I/usr/include/libpng12 -Wall -ggdb
 LIBS=-lpng12
-OUT=png2gds
+LDFLAGS=
 VERSION=20070807
 DISTDIR=${OUT}-${VERSION}
 
-${OUT} : png2gds.c
-	$(COMPILE) -DVERSION=\"$(VERSION)\" $(INCLUDES) $(LIBS) png2gds.c -o ${OUT}
+png2gds : png2gds.c
+	$(CC) -DVERSION=\"$(VERSION)\" $(CFLAGS) $(LIBS) $(LDFLAGS) $^ -o $@
 
-install: ${OUT}
-	install -s ${OUT} /usr/local/bin/${OUT}
+install: png2gds
+	install -s png2gds /usr/local/bin/png2gds
 
-dist: ${OUT}
+dist: png2gds
 	rm -rf ${DISTDIR}
 	mkdir ${DISTDIR}
 	cp png2gds.c ${DISTDIR}
@@ -22,11 +22,11 @@ dist: ${OUT}
 	tar -jcf ${DISTDIR}.tar.bz2 ${DISTDIR}
 
 clean:
-	rm -f $(OUT)
+	rm -f png2gds
 	rm -f *.o
 
-test: ${OUT}
-	./$(OUT) circ.png circ.gds 0.02
+test: png2gds
+	./png2gds circ.png circ.gds 0.02
 
-memtest: $(OUT)
-	valgrind -v --leak-check=full --show-reachable=yes ./$(OUT) circ.png circ.gds 0.02
+memtest: png2gds
+	valgrind -v --leak-check=full --show-reachable=yes ./png2gds circ.png circ.gds 0.02
