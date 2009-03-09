@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <png.h>
-#include <assert.h>
+#include "gds.h"
 
 #define ERROR 1
 #define PNG2GDS_VERSION "20070827"
@@ -54,24 +54,6 @@ void write_startel(FILE *optr, unsigned char layer)
 	fputc(0x10, optr); // XY
 	fputc(0x03, optr); // four byte int
 }
-
-void write_gds_ulong(FILE *optr, unsigned long num)
-{
-	unsigned char a, b, c, d;
-
-	assert(optr);
-
-	a = (unsigned char)((num >> 0) & 0xFF);
-	b = (unsigned char)((num >> 8) & 0xFF);
-	c = (unsigned char)((num >> 16) & 0xFF);
-	d = (unsigned char)((num >> 24) & 0xFF);
-
-	fputc(d, optr);
-	fputc(c, optr);
-	fputc(b, optr);
-	fputc(a, optr);
-}
-
 
 void write_endel(FILE *optr, unsigned long x1, unsigned long y1, unsigned long x2, unsigned long y2)
 {
