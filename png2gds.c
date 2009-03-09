@@ -152,6 +152,7 @@ int write_gds(const char *infile, const char *outfile, float grid)
 			(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	if(!png_ptr){
 		fclose(fp);
+		fclose(optr);
 		return (ERROR);
 	}
 
@@ -160,6 +161,7 @@ int write_gds(const char *infile, const char *outfile, float grid)
 		png_destroy_read_struct(&png_ptr,
 				(png_infopp)NULL, (png_infopp)NULL);
 		fclose(fp);
+		fclose(optr);
 		return (ERROR);
 	}
 
@@ -168,12 +170,14 @@ int write_gds(const char *infile, const char *outfile, float grid)
 		png_destroy_read_struct(&png_ptr, &info_ptr,
 				(png_infopp)NULL);
 		fclose(fp);
+		fclose(optr);
 		return (ERROR);
 	}
 
 	if(setjmp(png_jmpbuf(png_ptr))){
 		png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
 		fclose(fp);
+		fclose(optr);
 		return (ERROR);
 	}
 
