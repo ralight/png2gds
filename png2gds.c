@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <png.h>
+#include <assert.h>
 
 #define ERROR 1
 #define PNG2GDS_VERSION "20070827"
@@ -54,78 +55,40 @@ void write_startel(FILE *optr, unsigned char layer)
 	fputc(0x03, optr); // four byte int
 }
 
+void write_gds_ulong(FILE *optr, unsigned long num)
+{
+	unsigned char a, b, c, d;
+
+	assert(optr);
+
+	a = (unsigned char)((num >> 0) & 0xFF);
+	b = (unsigned char)((num >> 8) & 0xFF);
+	c = (unsigned char)((num >> 16) & 0xFF);
+	d = (unsigned char)((num >> 24) & 0xFF);
+
+	fputc(d, optr);
+	fputc(c, optr);
+	fputc(b, optr);
+	fputc(a, optr);
+}
+
 
 void write_endel(FILE *optr, unsigned long x1, unsigned long y1, unsigned long x2, unsigned long y2)
 {
-	unsigned char x1a, x1b, x1c, x1d;
-	unsigned char x2a, x2b, x2c, x2d;
-	unsigned char y1a, y1b, y1c, y1d;
-	unsigned char y2a, y2b, y2c, y2d;
+	write_gds_ulong(x1);
+	write_gds_ulong(y1);
 
-	x1a = (unsigned char)((x1 >> 0) & 0xFF);
-	x1b = (unsigned char)((x1 >> 8) & 0xFF);
-	x1c = (unsigned char)((x1 >> 16) & 0xFF);
-	x1d = (unsigned char)((x1 >> 24) & 0xFF);
+	write_gds_ulong(x1);
+	write_gds_ulong(y2);
 
-	x2a = (unsigned char)((x2 >> 0) & 0xFF);
-	x2b = (unsigned char)((x2 >> 8) & 0xFF);
-	x2c = (unsigned char)((x2 >> 16) & 0xFF);
-	x2d = (unsigned char)((x2 >> 24) & 0xFF);
+	write_gds_ulong(x2);
+	write_gds_ulong(y2);
 
-	y1a = (unsigned char)((y1 >> 0) & 0xFF);
-	y1b = (unsigned char)((y1 >> 8) & 0xFF);
-	y1c = (unsigned char)((y1 >> 16) & 0xFF);
-	y1d = (unsigned char)((y1 >> 24) & 0xFF);
+	write_gds_ulong(x2);
+	write_gds_ulong(y1);
 
-	y2a = (unsigned char)((y2 >> 0) & 0xFF);
-	y2b = (unsigned char)((y2 >> 8) & 0xFF);
-	y2c = (unsigned char)((y2 >> 16) & 0xFF);
-	y2d = (unsigned char)((y2 >> 24) & 0xFF);
-
-	fputc(x1d, optr); // X1
-	fputc(x1c, optr);
-	fputc(x1b, optr);
-	fputc(x1a, optr);
-	fputc(y1d, optr); // Y1
-	fputc(y1c, optr);
-	fputc(y1b, optr);
-	fputc(y1a, optr);
-
-	fputc(x1d, optr); // X1
-	fputc(x1c, optr);
-	fputc(x1b, optr);
-	fputc(x1a, optr);
-	fputc(y2d, optr); // Y2
-	fputc(y2c, optr);
-	fputc(y2b, optr);
-	fputc(y2a, optr);
-
-	fputc(x2d, optr); // X2
-	fputc(x2c, optr);
-	fputc(x2b, optr);
-	fputc(x2a, optr);
-	fputc(y2d, optr); // Y2
-	fputc(y2c, optr);
-	fputc(y2b, optr);
-	fputc(y2a, optr);
-
-	fputc(x2d, optr); // X2
-	fputc(x2c, optr);
-	fputc(x2b, optr);
-	fputc(x2a, optr);
-	fputc(y1d, optr); // Y1
-	fputc(y1c, optr);
-	fputc(y1b, optr);
-	fputc(y1a, optr);
-
-	fputc(x1d, optr); // X1
-	fputc(x1c, optr);
-	fputc(x1b, optr);
-	fputc(x1a, optr);
-	fputc(y1d, optr); // Y1
-	fputc(y1c, optr);
-	fputc(y1b, optr);
-	fputc(y1a, optr);
+	write_gds_ulong(x1);
+	write_gds_ulong(y1);
 
 	fputc(0x00, optr);
 	fputc(0x04, optr); // 4 bytes long
