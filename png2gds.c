@@ -75,20 +75,20 @@ void write_gds_ulong(FILE *optr, unsigned long num)
 
 void write_endel(FILE *optr, unsigned long x1, unsigned long y1, unsigned long x2, unsigned long y2)
 {
-	write_gds_ulong(x1);
-	write_gds_ulong(y1);
+	write_gds_ulong(optr, x1);
+	write_gds_ulong(optr, y1);
 
-	write_gds_ulong(x1);
-	write_gds_ulong(y2);
+	write_gds_ulong(optr, x1);
+	write_gds_ulong(optr, y2);
 
-	write_gds_ulong(x2);
-	write_gds_ulong(y2);
+	write_gds_ulong(optr, x2);
+	write_gds_ulong(optr, y2);
 
-	write_gds_ulong(x2);
-	write_gds_ulong(y1);
+	write_gds_ulong(optr, x2);
+	write_gds_ulong(optr, y1);
 
-	write_gds_ulong(x1);
-	write_gds_ulong(y1);
+	write_gds_ulong(optr, x1);
+	write_gds_ulong(optr, y1);
 
 	fputc(0x00, optr);
 	fputc(0x04, optr); // 4 bytes long
