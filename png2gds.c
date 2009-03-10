@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <png.h>
 #include "gds.h"
+#include "readpng.h"
 
 #define ERROR 1
 #define PNG2GDS_VERSION "20070827"
@@ -33,58 +34,33 @@ int write_gds(const char *infile, const char *outfile, float grid)
 	FILE *optr;
 	FILE *fp = fopen(infile, "rb");
 	png_uint_32 width, height;
+	png_byte bg_red, bg_green, bg_blue;
+	int channels;
+	png_uint_32 row_bytes;
+	png_byte *image_data = NULL;
+
 	if(!fp){
 		return (ERROR);
 	}
 
-	optr = fopen(outfile, "wb");
-	if(!optr){
+	if(readpng_init(fp, &width, &height)){
 		fclose(fp);
 		return -1;
 	}
-
-	png_structp png_ptr = png_create_read_struct
-			(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-	if(!png_ptr){
-		fclose(fp);
-		fclose(optr);
-		return (ERROR);
+	if(readpng_get_bgcolor(&bg_red, &bg_green, &bg_blue)){
+		/* do something! */
 	}
 
-	png_infop info_ptr = png_create_info_struct(png_ptr);
-	if(!info_ptr){
-		png_destroy_read_struct(&png_ptr,
-				(png_infopp)NULL, (png_infopp)NULL);
+	image_data = readpng_get_image(1.0, &channels, &row_bytes);
+	printf("Channels: %d\nRow Bytes: %d\n", channels, row_bytes);
+
+	optr = fopen(outfile, "wb");
+	if(!optr){
 		fclose(fp);
-		fclose(optr);
-		return (ERROR);
+		readpng_cleanup(TRUE);
+
+		return -1;
 	}
-
-	png_infop end_info = png_create_info_struct(png_ptr);
-	if(!end_info){
-		png_destroy_read_struct(&png_ptr, &info_ptr,
-				(png_infopp)NULL);
-		fclose(fp);
-		fclose(optr);
-		return (ERROR);
-	}
-
-	if(setjmp(png_jmpbuf(png_ptr))){
-		png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
-		fclose(fp);
-		fclose(optr);
-		return (ERROR);
-	}
-
-	rewind(fp);
-	png_init_io(png_ptr, fp);
-	png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
-
-	width = png_get_image_width(png_ptr, info_ptr);
-	height = png_get_image_height(png_ptr, info_ptr);
-
-	png_bytepp row_pointers;//[height];
-	row_pointers = png_get_rows(png_ptr, info_ptr);
 
 	/* Write gds2 */
 
@@ -127,7 +103,9 @@ int write_gds(const char *infile, const char *outfile, float grid)
 	for(y = 0; y < height; y++){
 		first = 1;
 		for(x = 0; x < width; x++){
-			thislayer = row_pointers[y][x];
+			thislayer = image_data[y*width + x];
+			printf("%d ", thislayer);
+
 			if(!first && thislayer != lastlayer){
 				if(lastlayer != 255){
 					x2 = x * DBUNITS * grid;
@@ -153,6 +131,7 @@ int write_gds(const char *infile, const char *outfile, float grid)
 			}
 			lastlayer = thislayer;
 		}
+		printf("\n");
 		if(in_el){
 			x2 = x * DBUNITS * grid;
 			write_gds_endel(optr, x1, y1, x2, y2);
@@ -164,7 +143,8 @@ int write_gds(const char *infile, const char *outfile, float grid)
 
 	fclose(optr);
 
-	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
+	readpng_cleanup(TRUE);
+
 	fclose(fp);
 
 	return 0;

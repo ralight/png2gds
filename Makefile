@@ -6,13 +6,16 @@ VERSION=20070807
 DISTDIR=${OUT}-${VERSION}
 prefix=/usr/local
 
-png2gds : png2gds.o gds.o
+png2gds : png2gds.o gds.o readpng.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LIBS)
 
 png2gds.o : png2gds.c
 	$(CC) -DVERSION=\"$(VERSION)\" $(CFLAGS) -c $< -o $@
 
 gds.o : gds.c gds.h
+	$(CC) -DVERSION=\"$(VERSION)\" $(CFLAGS) -c $< -o $@
+
+readpng.o : readpng.c readpng.h
 	$(CC) -DVERSION=\"$(VERSION)\" $(CFLAGS) -c $< -o $@
 
 install: png2gds
