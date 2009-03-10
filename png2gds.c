@@ -128,7 +128,7 @@ int write_gds(const char *infile, const char *outfile, float grid)
 
 	rewind(fp);
 	png_init_io(png_ptr, fp);
-	png_read_png(png_ptr, info_ptr, 0, NULL);
+	png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
 
 	width = png_get_image_width(png_ptr, info_ptr);
 	height = png_get_image_height(png_ptr, info_ptr);
