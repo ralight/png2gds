@@ -23,6 +23,15 @@
 
 #include <stdio.h>
 
+void write_gds_bgnlib(FILE *optr);
+void write_gds_bgnstr(FILE *optr);
+void write_gds_endel(FILE *optr, unsigned long x1, unsigned long y1, unsigned long x2, unsigned long y2);
+void write_gds_endlib(FILE *optr);
+void write_gds_endstr(FILE *optr);
+void write_gds_header(FILE *optr);
+void write_gds_libname(FILE *optr);
+void write_gds_startel(FILE *optr, unsigned char layer);
+void write_gds_strname(FILE *optr);
 void write_gds_ulong(FILE *optr, unsigned long num);
 
 #endif

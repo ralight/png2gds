@@ -28,56 +28,6 @@
 #define PNG2GDS_VERSION "20070827"
 #define DBUNITS 1000
 
-void write_startel(FILE *optr, unsigned char layer)
-{
-	fputc(0x00, optr);
-	fputc(0x04, optr); // 4 bytes long
-	fputc(0x08, optr); // BOUNDARY
-	fputc(0x00, optr); // no data
-
-	fputc(0x00, optr);
-	fputc(0x06, optr); // 6 bytes long
-	fputc(0x0D, optr); // LAYER
-	fputc(0x02, optr); // two byte int
-	fputc(0x00, optr);
-	fputc(layer, optr);
-
-	fputc(0x00, optr);
-	fputc(0x06, optr); // 6 bytes long
-	fputc(0x0E, optr); // DATATYPE
-	fputc(0x02, optr); // two byte int
-	fputc(0x00, optr);
-	fputc(0x00, optr);
-
-	fputc(0x00, optr);
-	fputc(44, optr); // 44 bytes long
-	fputc(0x10, optr); // XY
-	fputc(0x03, optr); // four byte int
-}
-
-void write_endel(FILE *optr, unsigned long x1, unsigned long y1, unsigned long x2, unsigned long y2)
-{
-	write_gds_ulong(optr, x1);
-	write_gds_ulong(optr, y1);
-
-	write_gds_ulong(optr, x1);
-	write_gds_ulong(optr, y2);
-
-	write_gds_ulong(optr, x2);
-	write_gds_ulong(optr, y2);
-
-	write_gds_ulong(optr, x2);
-	write_gds_ulong(optr, y1);
-
-	write_gds_ulong(optr, x1);
-	write_gds_ulong(optr, y1);
-
-	fputc(0x00, optr);
-	fputc(0x04, optr); // 4 bytes long
-	fputc(0x11, optr); // ENDEL
-	fputc(0x00, optr); // no data
-}
-
 int write_gds(const char *infile, const char *outfile, float grid)
 {
 	FILE *optr;
@@ -138,56 +88,9 @@ int write_gds(const char *infile, const char *outfile, float grid)
 
 	/* Write gds2 */
 
-	fputc(0x00, optr);
-	fputc(0x06, optr); // 6 bytes long
-	fputc(0x00, optr); // HEADER
-	fputc(0x02, optr); // two byte int
-	fputc(0x00, optr);
-	fputc(0x07, optr); // version 600
-
-	fputc(0x00, optr);
-	fputc(0x1C, optr); // 28 bytes long
-	fputc(0x01, optr); // BGNLIB
-	fputc(0x02, optr); // two byte int
-	fputc(0x07, optr);
-	fputc(0xd1, optr);
-	fputc(0x00, optr);
-	fputc(0x04, optr);
-	fputc(0x00, optr);
-	fputc(0x13, optr);
-	fputc(0x00, optr);
-	fputc(0x0f, optr);
-	fputc(0x00, optr);
-	fputc(0x33, optr);
-	fputc(0x00, optr);
-	fputc(0x26, optr);
-	fputc(0x07, optr);
-	fputc(0xd5, optr);
-	fputc(0x00, optr);
-	fputc(0x02, optr);
-	fputc(0x00, optr);
-	fputc(0x12, optr);
-	fputc(0x00, optr);
-	fputc(0x0f, optr);
-	fputc(0x00, optr);
-	fputc(0x2a, optr);
-	fputc(0x00, optr);
-	fputc(0x09, optr);
-
-	fputc(0x00, optr);
-	fputc(0x0E, optr);
-	fputc(0x02, optr); // LIBNAME
-	fputc(0x06, optr); // ascii string
-	fputc('P', optr);
-	fputc('N', optr);
-	fputc('G', optr);
-	fputc('2', optr);
-	fputc('G', optr);
-	fputc('D', optr);
-	fputc('S', optr);
-	fputc('.', optr);
-	fputc('D', optr);
-	fputc('B', optr);
+	write_gds_header(optr);
+	write_gds_bgnlib(optr);
+	write_gds_libname(optr);
 
 	fputc(0x00, optr);
 	fputc(0x14, optr);
@@ -212,47 +115,8 @@ int write_gds(const char *infile, const char *outfile, float grid)
 	fputc(0x5A, optr);
 	fputc(0x54, optr);
 
-	fputc(0x00, optr);
-	fputc(0x1C, optr); // 28 bytes long
-	fputc(0x05, optr); // BGNSTR
-	fputc(0x02, optr); 
-	fputc(0x00, optr);
-	fputc(0x64, optr);
-	fputc(0x00, optr);
-	fputc(0x05, optr);
-	fputc(0x00, optr);
-	fputc(0x02, optr);
-	fputc(0x00, optr);
-	fputc(0x0f, optr);
-	fputc(0x00, optr);
-	fputc(0x28, optr);
-	fputc(0x00, optr);
-	fputc(0x38, optr);
-	fputc(0x07, optr);
-	fputc(0xD5, optr);
-	fputc(0x00, optr);
-	fputc(0x02, optr);
-	fputc(0x00, optr);
-	fputc(0x12, optr);
-	fputc(0x00, optr);
-	fputc(0x0f, optr);
-	fputc(0x00, optr);
-	fputc(0x2a, optr);
-	fputc(0x00, optr);
-	fputc(0x09, optr);
-
-	fputc(0x00, optr);
-	fputc(0x0C, optr); // 11 bytes long
-	fputc(0x06, optr); // STRNAME
-	fputc(0x06, optr); // ascii string
-	fputc('p', optr);
-	fputc('n', optr);
-	fputc('g', optr);
-	fputc('2', optr);
-	fputc('g', optr);
-	fputc('d', optr);
-	fputc('s', optr);
-	fputc('\0', optr);
+	write_gds_bgnstr(optr);
+	write_gds_strname(optr);
 
 	unsigned long x, y;
 	unsigned long x1, x2, y1, y2;
@@ -267,7 +131,7 @@ int write_gds(const char *infile, const char *outfile, float grid)
 			if(!first && thislayer != lastlayer){
 				if(lastlayer != 255){
 					x2 = x * DBUNITS * grid;
-					write_endel(optr, x1, y1, x2, y2);
+					write_gds_endel(optr, x1, y1, x2, y2);
 					in_el = 0;
 				}
 				x1 = (x + 0) * DBUNITS * grid;
@@ -275,12 +139,12 @@ int write_gds(const char *infile, const char *outfile, float grid)
 				y2 = (y + 1) * DBUNITS * grid;
 
 				if(thislayer != 255){
-					write_startel(optr, thislayer);
+					write_gds_startel(optr, thislayer);
 					in_el = 1;
 				}
 			}
 			if(first && thislayer != 255){
-				write_startel(optr, thislayer);
+				write_gds_startel(optr, thislayer);
 				in_el = 1;
 				first = 0;
 				x1 = (x + 0) * DBUNITS * grid;
@@ -291,19 +155,12 @@ int write_gds(const char *infile, const char *outfile, float grid)
 		}
 		if(in_el){
 			x2 = x * DBUNITS * grid;
-			write_endel(optr, x1, y1, x2, y2);
+			write_gds_endel(optr, x1, y1, x2, y2);
 		}
 	}
 
-	fputc(0x00, optr);
-	fputc(0x04, optr); // 4 bytes long
-	fputc(0x07, optr); // ENDSTR
-	fputc(0x00, optr); // no data
-
-	fputc(0x00, optr);
-	fputc(0x04, optr); // 4 bytes long
-	fputc(0x04, optr); // ENDLIB
-	fputc(0x00, optr); // no data
+	write_gds_endstr(optr);
+	write_gds_endlib(optr);
 
 	fclose(optr);
 
