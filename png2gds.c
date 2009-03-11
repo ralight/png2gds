@@ -49,9 +49,16 @@ int write_gds(const char *infile, const char *outfile, float grid)
 	}
 	if(readpng_get_bgcolor(&bg_red, &bg_green, &bg_blue)){
 		/* do something! */
+		printf("Background colour not found.\n");
+	}else{
+		printf("Background: %d %d %d\n", bg_red, bg_green, bg_blue);
 	}
 
 	image_data = readpng_get_image(1.0, &channels, &row_bytes);
+	if(!image_data){
+		printf("Invalid png file.\n");
+		return ERROR;
+	}
 	printf("Channels: %d\nRow Bytes: %d\n", channels, row_bytes);
 
 	optr = fopen(outfile, "wb");

@@ -205,7 +205,6 @@ int readpng_get_bgcolor(uch *red, uch *green, uch *blue)
 
 uch *readpng_get_image(double display_exponent, int *pChannels, ulg *pRowbytes)
 {
-    double  gamma;
     png_uint_32  i, rowbytes;
     png_bytepp  row_pointers = NULL;
 
@@ -219,30 +218,24 @@ uch *readpng_get_image(double display_exponent, int *pChannels, ulg *pRowbytes)
     }
 
 
+	/* Reject RGB images.
+	 * Strip 16-bit-per-sample images to 8 bits per sample.
+	 * Pack 1, 2, 4 bit/pixel images to 8 bit/pixel.
+	 * Strip alpha.
+	 */
     /* expand palette images to RGB, low-bit-depth grayscale images to 8 bits,
      * transparency chunks to full alpha channel; strip 16-bit-per-sample
      * images to 8 bits per sample; and convert grayscale to RGB[A] */
 
-//    if (color_type == PNG_COLOR_TYPE_PALETTE)
-//        png_set_expand(png_ptr);
-//    if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
-//        png_set_expand(png_ptr);
-	png_set_packing(png_ptr);
-    if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
-        png_set_expand(png_ptr);
-    if (bit_depth == 16)
+	if(color_type == PNG_COLOR_TYPE_RGB || color_type == PNG_COLOR_TYPE_RGB_ALPHA){
+		return NULL;
+	}
+
+    if (bit_depth == 16){
         png_set_strip_16(png_ptr);
-    if (color_type == PNG_COLOR_TYPE_GRAY ||
-        color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
-        png_set_gray_to_rgb(png_ptr);
-
-
-    /* unlike the example in the libpng documentation, we have *no* idea where
-     * this file may have come from--so if it doesn't have a file gamma, don't
-     * do any correction ("do no harm") */
-
-    if (png_get_gAMA(png_ptr, info_ptr, &gamma))
-        png_set_gamma(png_ptr, display_exponent, gamma);
+	}
+	png_set_strip_alpha(png_ptr);
+	png_set_packing(png_ptr);
 
 
     /* all transformations have been registered; now update info_ptr data,
