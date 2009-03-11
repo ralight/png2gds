@@ -111,7 +111,6 @@ int write_gds(const char *infile, const char *outfile, float grid)
 		first = 1;
 		for(x = 0; x < width; x++){
 			thislayer = image_data[y*width + x];
-			printf("%d ", thislayer);
 
 			if(!first && thislayer != lastlayer){
 				if(lastlayer != 255){
@@ -138,7 +137,6 @@ int write_gds(const char *infile, const char *outfile, float grid)
 			}
 			lastlayer = thislayer;
 		}
-		printf("\n");
 		if(in_el){
 			x2 = x * DBUNITS * grid;
 			write_gds_endel(optr, x1, y1, x2, y2);
