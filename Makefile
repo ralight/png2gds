@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-I/usr/include/libpng12 -Wall -ggdb
-LIBS=-lpng12
+LIBS=-lpng12 -lm
 LDFLAGS=
 VERSION=20070807
 DISTDIR=${OUT}-${VERSION}

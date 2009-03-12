@@ -19,6 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <png.h>
@@ -102,9 +103,15 @@ int write_output(png_byte *image_data, const char *outfile, float grid)
 				if(lastlayer != 255){
 					x2 = x * DBUNITS * grid;
 					if(optr == stdout){
-						fprintf(optr, "%d %f %f %f %f\n", lastlayer, 
-								((float)x1)/DBUNITS, ((float)y1)/DBUNITS, ((float)x2)/DBUNITS, ((float)y2)/DBUNITS);
+						if(fabs(grid - 1.0) < 0.01){
+							fprintf(optr, "%d %ld %ld %ld %ld\n", lastlayer, 
+									x1/DBUNITS, y1/DBUNITS, x2/DBUNITS, y2/DBUNITS);
+						}else{
+							fprintf(optr, "%d %f %f %f %f\n", lastlayer, 
+									((float)x1)/DBUNITS, ((float)y1)/DBUNITS, ((float)x2)/DBUNITS, ((float)y2)/DBUNITS);
+						}
 						fflush(optr);
+
 					}else{
 						write_gds_pixels(optr, lastlayer, x1, y1, x2, y2);
 					}
@@ -130,8 +137,13 @@ int write_output(png_byte *image_data, const char *outfile, float grid)
 		if(in_el){
 			x2 = x * DBUNITS * grid;
 			if(optr == stdout){
-				fprintf(optr, "%d %f %f %f %f\n", lastlayer, 
-						((float)x1)/DBUNITS, ((float)y1)/DBUNITS, ((float)x2)/DBUNITS, ((float)y2)/DBUNITS);
+				if(fabs(grid - 1.0) < 0.01){
+					fprintf(optr, "%d %ld %ld %ld %ld\n", lastlayer, 
+							x1/DBUNITS, y1/DBUNITS, x2/DBUNITS, y2/DBUNITS);
+				}else{
+					fprintf(optr, "%d %f %f %f %f\n", lastlayer, 
+							((float)x1)/DBUNITS, ((float)y1)/DBUNITS, ((float)x2)/DBUNITS, ((float)y2)/DBUNITS);
+				}
 				fflush(optr);
 			}else{
 				write_gds_pixels(optr, lastlayer, x1, y1, x2, y2);
