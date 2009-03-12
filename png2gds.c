@@ -49,12 +49,14 @@ png_byte *read_png(const char *infile)
 		return NULL;
 	}
 
+#if 0
 	if(readpng_get_bgcolor(&bg_red, &bg_green, &bg_blue)){
 		/* do something! */
 		printf("Background colour not found.\n");
 	}else{
 		printf("Background: %d %d %d\n", bg_red, bg_green, bg_blue);
 	}
+#endif
 
 	image_data = readpng_get_image(1.0, &channels, &row_bytes);
 	if(!image_data){
@@ -62,7 +64,7 @@ png_byte *read_png(const char *infile)
 		fclose(fp);
 		return NULL;
 	}
-	printf("Channels: %d\nRow Bytes: %ld\n", channels, (long)row_bytes);
+	//printf("Channels: %d\nRow Bytes: %ld\n", channels, (long)row_bytes);
 
 	fclose(fp);
 	return image_data;
