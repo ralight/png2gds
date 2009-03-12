@@ -96,7 +96,7 @@ int write_output(png_byte *image_data, const char *outfile, float grid)
 	for(y = 0; y < height; y++){
 		first = 1;
 		for(x = 0; x < width; x++){
-			thislayer = image_data[y*width + x];
+			thislayer = image_data[(height - y - 1)*width + x];
 
 			if(!first && thislayer != lastlayer){
 				if(lastlayer != 255){
