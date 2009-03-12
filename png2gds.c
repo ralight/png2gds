@@ -69,21 +69,19 @@ png_byte *read_png(const char *infile)
 }
 
 
-int write_stdout(png_byte *image_data, float grid)
-{
-	return 0;
-}
-
-
-int write_gds(png_byte *image_data, const char *outfile, float grid)
+int write_output(png_byte *image_data, const char *outfile, float grid)
 {
 	FILE *optr;
 
-	optr = fopen(outfile, "wb");
-	if(!optr){
-		readpng_cleanup(TRUE);
+	if(!strcmp(outfile, "stdout")){
+		optr = stdout;
+	}else{
+		optr = fopen(outfile, "wb");
+		if(!optr){
+			readpng_cleanup(TRUE);
 
-		return -1;
+			return -1;
+		}
 	}
 
 
@@ -101,7 +99,12 @@ int write_gds(png_byte *image_data, const char *outfile, float grid)
 			if(!first && thislayer != lastlayer){
 				if(lastlayer != 255){
 					x2 = x * DBUNITS * grid;
-					write_gds_pixels(optr, lastlayer, x1, y1, x2, y2);
+					if(optr == stdout){
+						fprintf(optr, "%d %f %f %f %f\n", lastlayer, 
+								((float)x1)/DBUNITS, ((float)y1)/DBUNITS, ((float)x2)/DBUNITS, ((float)y2)/DBUNITS);
+					}else{
+						write_gds_pixels(optr, lastlayer, x1, y1, x2, y2);
+					}
 					in_el = 0;
 				}
 				x1 = (x + 0) * DBUNITS * grid;
@@ -123,12 +126,19 @@ int write_gds(png_byte *image_data, const char *outfile, float grid)
 		}
 		if(in_el){
 			x2 = x * DBUNITS * grid;
-			write_gds_pixels(optr, lastlayer, x1, y1, x2, y2);
+			if(optr == stdout){
+				fprintf(optr, "%d %f %f %f %f\n", lastlayer, 
+						((float)x1)/DBUNITS, ((float)y1)/DBUNITS, ((float)x2)/DBUNITS, ((float)y2)/DBUNITS);
+			}else{
+				write_gds_pixels(optr, lastlayer, x1, y1, x2, y2);
+			}
 		}
 	}
 
-	write_gds_endstr(optr);
-	write_gds_endlib(optr);
+	if(optr != stdout){
+		write_gds_endstr(optr);
+		write_gds_endlib(optr);
+	}
 
 	fclose(optr);
 
@@ -163,11 +173,7 @@ int main(int argc, char* argv[])
 	}
 	image_data = read_png(argv[1]);
 	if(image_data){
-		if(!strcmp(argv[2], "stdout")){
-			return write_stdout(image_data, atof(argv[3]));
-		}else{
-			return write_gds(image_data, argv[2], atof(argv[3]));
-		}
+		return write_output(image_data, argv[2], atof(argv[3]));
 	}
 
 	return 1;
