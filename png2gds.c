@@ -22,6 +22,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <png.h>
 #include "gds.h"
 #include "readpng.h"
@@ -103,6 +104,7 @@ int write_output(png_byte *image_data, const char *outfile, float grid)
 				if(lastlayer != 255){
 					x2 = x * DBUNITS * grid;
 					if(optr == stdout){
+						usleep(50);
 						if(fabs(grid - 1.0) < 0.01){
 							fprintf(optr, "%d %ld %ld %ld %ld\n", lastlayer, 
 									x1/DBUNITS, y1/DBUNITS, x2/DBUNITS, y2/DBUNITS);
@@ -137,6 +139,7 @@ int write_output(png_byte *image_data, const char *outfile, float grid)
 		if(in_el){
 			x2 = x * DBUNITS * grid;
 			if(optr == stdout){
+				usleep(50);
 				if(fabs(grid - 1.0) < 0.01){
 					fprintf(optr, "%d %ld %ld %ld %ld\n", lastlayer, 
 							x1/DBUNITS, y1/DBUNITS, x2/DBUNITS, y2/DBUNITS);
