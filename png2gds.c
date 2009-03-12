@@ -101,7 +101,7 @@ int write_gds(png_byte *image_data, const char *outfile, float grid)
 			if(!first && thislayer != lastlayer){
 				if(lastlayer != 255){
 					x2 = x * DBUNITS * grid;
-					write_gds_endel(optr, x1, y1, x2, y2);
+					write_gds_pixels(optr, lastlayer, x1, y1, x2, y2);
 					in_el = 0;
 				}
 				x1 = (x + 0) * DBUNITS * grid;
@@ -109,12 +109,10 @@ int write_gds(png_byte *image_data, const char *outfile, float grid)
 				y2 = (y + 1) * DBUNITS * grid;
 
 				if(thislayer != 255){
-					write_gds_startel(optr, thislayer);
 					in_el = 1;
 				}
 			}
 			if(first && thislayer != 255){
-				write_gds_startel(optr, thislayer);
 				in_el = 1;
 				first = 0;
 				x1 = (x + 0) * DBUNITS * grid;
@@ -125,7 +123,7 @@ int write_gds(png_byte *image_data, const char *outfile, float grid)
 		}
 		if(in_el){
 			x2 = x * DBUNITS * grid;
-			write_gds_endel(optr, x1, y1, x2, y2);
+			write_gds_pixels(optr, lastlayer, x1, y1, x2, y2);
 		}
 	}
 
