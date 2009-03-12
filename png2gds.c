@@ -29,24 +29,26 @@
 #define PNG2GDS_VERSION "20070827"
 #define DBUNITS 1000
 
-int write_gds(const char *infile, const char *outfile, float grid)
+png_uint_32 width, height;
+
+png_byte *read_png(const char *infile)
 {
-	FILE *optr;
-	FILE *fp = fopen(infile, "rb");
-	png_uint_32 width, height;
 	png_byte bg_red, bg_green, bg_blue;
 	int channels;
 	png_uint_32 row_bytes;
 	png_byte *image_data = NULL;
 
+	FILE *fp = fopen(infile, "rb");
+
 	if(!fp){
-		return (ERROR);
+		return NULL;
 	}
 
 	if(readpng_init(fp, &width, &height)){
 		fclose(fp);
-		return -1;
+		return NULL;
 	}
+
 	if(readpng_get_bgcolor(&bg_red, &bg_green, &bg_blue)){
 		/* do something! */
 		printf("Background colour not found.\n");
@@ -57,13 +59,28 @@ int write_gds(const char *infile, const char *outfile, float grid)
 	image_data = readpng_get_image(1.0, &channels, &row_bytes);
 	if(!image_data){
 		printf("Invalid png file.\n");
-		return ERROR;
+		fclose(fp);
+		return NULL;
 	}
-	printf("Channels: %d\nRow Bytes: %d\n", channels, row_bytes);
+	printf("Channels: %d\nRow Bytes: %ld\n", channels, (long)row_bytes);
+
+	fclose(fp);
+	return image_data;
+}
+
+
+int write_stdout(png_byte *image_data, float grid)
+{
+	return 0;
+}
+
+
+int write_gds(png_byte *image_data, const char *outfile, float grid)
+{
+	FILE *optr;
 
 	optr = fopen(outfile, "wb");
 	if(!optr){
-		fclose(fp);
 		readpng_cleanup(TRUE);
 
 		return -1;
@@ -150,10 +167,9 @@ int write_gds(const char *infile, const char *outfile, float grid)
 
 	readpng_cleanup(TRUE);
 
-	fclose(fp);
-
 	return 0;
 }
+
 
 void printusage()
 {
@@ -172,10 +188,20 @@ void printusage()
 
 int main(int argc, char* argv[])
 {
+	png_byte *image_data = NULL;
+
 	if(argc!=4){
 		printusage();
 		return 1;
 	}
+	image_data = read_png(argv[1]);
+	if(image_data){
+		if(!strcmp(argv[2], "stdout")){
+			return write_stdout(image_data, atof(argv[3]));
+		}else{
+			return write_gds(image_data, argv[2], atof(argv[3]));
+		}
+	}
 
-	return write_gds(argv[1], argv[2], atof(argv[3]));
+	return 1;
 }
