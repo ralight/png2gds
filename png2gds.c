@@ -102,6 +102,7 @@ int write_output(png_byte *image_data, const char *outfile, float grid)
 					if(optr == stdout){
 						fprintf(optr, "%d %f %f %f %f\n", lastlayer, 
 								((float)x1)/DBUNITS, ((float)y1)/DBUNITS, ((float)x2)/DBUNITS, ((float)y2)/DBUNITS);
+						fflush(optr);
 					}else{
 						write_gds_pixels(optr, lastlayer, x1, y1, x2, y2);
 					}
@@ -129,6 +130,7 @@ int write_output(png_byte *image_data, const char *outfile, float grid)
 			if(optr == stdout){
 				fprintf(optr, "%d %f %f %f %f\n", lastlayer, 
 						((float)x1)/DBUNITS, ((float)y1)/DBUNITS, ((float)x2)/DBUNITS, ((float)y2)/DBUNITS);
+				fflush(optr);
 			}else{
 				write_gds_pixels(optr, lastlayer, x1, y1, x2, y2);
 			}
