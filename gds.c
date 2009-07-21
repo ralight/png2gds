@@ -21,6 +21,42 @@
 #include <assert.h>
 #include "gds.h"
 
+void write_gds_all_header(FILE *optr)
+{
+	assert(optr);
+
+	write_gds_header(optr);
+	write_gds_bgnlib(optr);
+	write_gds_libname(optr);
+
+	fputc(0x00, optr);
+	fputc(0x14, optr);
+	fputc(0x03, optr); // UNITS
+	fputc(0x05, optr); // eight byte real
+
+	fputc(0x3E, optr);
+	fputc(0x41, optr);
+	fputc(0x89, optr);
+	fputc(0x37, optr);
+	fputc(0x4B, optr);
+	fputc(0xC6, optr);
+	fputc(0xA7, optr);
+	fputc(0xF0, optr);
+
+	fputc(0x39, optr);
+	fputc(0x44, optr);
+	fputc(0xB8, optr);
+	fputc(0x2F, optr);
+	fputc(0xA0, optr);
+	fputc(0x9B, optr);
+	fputc(0x5A, optr);
+	fputc(0x54, optr);
+
+	write_gds_bgnstr(optr);
+	write_gds_strname(optr);
+}
+
+
 void write_gds_bgnlib(FILE *optr)
 {
 	assert(optr);
@@ -89,9 +125,33 @@ void write_gds_bgnstr(FILE *optr)
 	fputc(0x09, optr);
 }
 
-void write_gds_endel(FILE *optr, unsigned long x1, unsigned long y1, unsigned long x2, unsigned long y2)
+void write_gds_pixels(FILE *optr, unsigned char layer, unsigned long x1, unsigned long y1, unsigned long x2, unsigned long y2)
 {
 	assert(optr);
+
+	fputc(0x00, optr);
+	fputc(0x04, optr); // 4 bytes long
+	fputc(0x08, optr); // BOUNDARY
+	fputc(0x00, optr); // no data
+
+	fputc(0x00, optr);
+	fputc(0x06, optr); // 6 bytes long
+	fputc(0x0D, optr); // LAYER
+	fputc(0x02, optr); // two byte int
+	fputc(0x00, optr);
+	fputc(layer, optr);
+
+	fputc(0x00, optr);
+	fputc(0x06, optr); // 6 bytes long
+	fputc(0x0E, optr); // DATATYPE
+	fputc(0x02, optr); // two byte int
+	fputc(0x00, optr);
+	fputc(0x00, optr);
+
+	fputc(0x00, optr);
+	fputc(44, optr); // 44 bytes long
+	fputc(0x10, optr); // XY
+	fputc(0x03, optr); // four byte int
 
 	write_gds_ulong(optr, x1);
 	write_gds_ulong(optr, y1);
@@ -164,35 +224,6 @@ void write_gds_libname(FILE *optr)
 	fputc('.', optr);
 	fputc('D', optr);
 	fputc('B', optr);
-}
-
-void write_gds_startel(FILE *optr, unsigned char layer)
-{
-	assert(optr);
-
-	fputc(0x00, optr);
-	fputc(0x04, optr); // 4 bytes long
-	fputc(0x08, optr); // BOUNDARY
-	fputc(0x00, optr); // no data
-
-	fputc(0x00, optr);
-	fputc(0x06, optr); // 6 bytes long
-	fputc(0x0D, optr); // LAYER
-	fputc(0x02, optr); // two byte int
-	fputc(0x00, optr);
-	fputc(layer, optr);
-
-	fputc(0x00, optr);
-	fputc(0x06, optr); // 6 bytes long
-	fputc(0x0E, optr); // DATATYPE
-	fputc(0x02, optr); // two byte int
-	fputc(0x00, optr);
-	fputc(0x00, optr);
-
-	fputc(0x00, optr);
-	fputc(44, optr); // 44 bytes long
-	fputc(0x10, optr); // XY
-	fputc(0x03, optr); // four byte int
 }
 
 void write_gds_strname(FILE *optr)

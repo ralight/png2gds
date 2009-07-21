@@ -19,104 +19,75 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <png.h>
 #include "gds.h"
+#include "readpng.h"
 
 #define ERROR 1
 #define PNG2GDS_VERSION "20070827"
 #define DBUNITS 1000
 
-int write_gds(const char *infile, const char *outfile, float grid)
+png_uint_32 width, height;
+
+png_byte *read_png(const char *infile)
+{
+	png_byte bg_red, bg_green, bg_blue;
+	int channels;
+	png_uint_32 row_bytes;
+	png_byte *image_data = NULL;
+
+	FILE *fp = fopen(infile, "rb");
+
+	if(!fp){
+		return NULL;
+	}
+
+	if(readpng_init(fp, &width, &height)){
+		fclose(fp);
+		return NULL;
+	}
+
+#if 0
+	if(readpng_get_bgcolor(&bg_red, &bg_green, &bg_blue)){
+		/* do something! */
+		printf("Background colour not found.\n");
+	}else{
+		printf("Background: %d %d %d\n", bg_red, bg_green, bg_blue);
+	}
+#endif
+
+	image_data = readpng_get_image(1.0, &channels, &row_bytes);
+	if(!image_data){
+		printf("Invalid png file.\n");
+		fclose(fp);
+		return NULL;
+	}
+	//printf("Channels: %d\nRow Bytes: %ld\n", channels, (long)row_bytes);
+
+	fclose(fp);
+	return image_data;
+}
+
+
+int write_output(png_byte *image_data, const char *outfile, float grid)
 {
 	FILE *optr;
-	FILE *fp = fopen(infile, "rb");
-	png_uint_32 width, height;
-	if(!fp){
-		return (ERROR);
+
+	if(!strcmp(outfile, "stdout")){
+		optr = stdout;
+	}else{
+		optr = fopen(outfile, "wb");
+		if(!optr){
+			readpng_cleanup(TRUE);
+
+			return -1;
+		}
 	}
 
-	optr = fopen(outfile, "wb");
-	if(!optr){
-		fclose(fp);
-		return -1;
-	}
-
-	png_structp png_ptr = png_create_read_struct
-			(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-	if(!png_ptr){
-		fclose(fp);
-		fclose(optr);
-		return (ERROR);
-	}
-
-	png_infop info_ptr = png_create_info_struct(png_ptr);
-	if(!info_ptr){
-		png_destroy_read_struct(&png_ptr,
-				(png_infopp)NULL, (png_infopp)NULL);
-		fclose(fp);
-		fclose(optr);
-		return (ERROR);
-	}
-
-	png_infop end_info = png_create_info_struct(png_ptr);
-	if(!end_info){
-		png_destroy_read_struct(&png_ptr, &info_ptr,
-				(png_infopp)NULL);
-		fclose(fp);
-		fclose(optr);
-		return (ERROR);
-	}
-
-	if(setjmp(png_jmpbuf(png_ptr))){
-		png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
-		fclose(fp);
-		fclose(optr);
-		return (ERROR);
-	}
-
-	rewind(fp);
-	png_init_io(png_ptr, fp);
-	png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
-
-	width = png_get_image_width(png_ptr, info_ptr);
-	height = png_get_image_height(png_ptr, info_ptr);
-
-	png_bytepp row_pointers;//[height];
-	row_pointers = png_get_rows(png_ptr, info_ptr);
-
-	/* Write gds2 */
-
-	write_gds_header(optr);
-	write_gds_bgnlib(optr);
-	write_gds_libname(optr);
-
-	fputc(0x00, optr);
-	fputc(0x14, optr);
-	fputc(0x03, optr); // UNITS
-	fputc(0x05, optr); // eight byte real
-
-	fputc(0x3E, optr);
-	fputc(0x41, optr);
-	fputc(0x89, optr);
-	fputc(0x37, optr);
-	fputc(0x4B, optr);
-	fputc(0xC6, optr);
-	fputc(0xA7, optr);
-	fputc(0xF0, optr);
-
-	fputc(0x39, optr);
-	fputc(0x44, optr);
-	fputc(0xB8, optr);
-	fputc(0x2F, optr);
-	fputc(0xA0, optr);
-	fputc(0x9B, optr);
-	fputc(0x5A, optr);
-	fputc(0x54, optr);
-
-	write_gds_bgnstr(optr);
-	write_gds_strname(optr);
 
 	unsigned long x, y;
 	unsigned long x1, x2, y1, y2;
@@ -127,11 +98,25 @@ int write_gds(const char *infile, const char *outfile, float grid)
 	for(y = 0; y < height; y++){
 		first = 1;
 		for(x = 0; x < width; x++){
-			thislayer = row_pointers[y][x];
+			thislayer = image_data[(height - y - 1)*width + x];
+
 			if(!first && thislayer != lastlayer){
 				if(lastlayer != 255){
 					x2 = x * DBUNITS * grid;
-					write_gds_endel(optr, x1, y1, x2, y2);
+					if(optr == stdout){
+						usleep(50);
+						if(fabs(grid - 1.0) < 0.01){
+							fprintf(optr, "%d %ld %ld %ld %ld\n", lastlayer, 
+									x1/DBUNITS, y1/DBUNITS, x2/DBUNITS, y2/DBUNITS);
+						}else{
+							fprintf(optr, "%d %f %f %f %f\n", lastlayer, 
+									((float)x1)/DBUNITS, ((float)y1)/DBUNITS, ((float)x2)/DBUNITS, ((float)y2)/DBUNITS);
+						}
+						fflush(optr);
+
+					}else{
+						write_gds_pixels(optr, lastlayer, x1, y1, x2, y2);
+					}
 					in_el = 0;
 				}
 				x1 = (x + 0) * DBUNITS * grid;
@@ -139,12 +124,10 @@ int write_gds(const char *infile, const char *outfile, float grid)
 				y2 = (y + 1) * DBUNITS * grid;
 
 				if(thislayer != 255){
-					write_gds_startel(optr, thislayer);
 					in_el = 1;
 				}
 			}
 			if(first && thislayer != 255){
-				write_gds_startel(optr, thislayer);
 				in_el = 1;
 				first = 0;
 				x1 = (x + 0) * DBUNITS * grid;
@@ -155,20 +138,34 @@ int write_gds(const char *infile, const char *outfile, float grid)
 		}
 		if(in_el){
 			x2 = x * DBUNITS * grid;
-			write_gds_endel(optr, x1, y1, x2, y2);
+			if(optr == stdout){
+				usleep(50);
+				if(fabs(grid - 1.0) < 0.01){
+					fprintf(optr, "%d %ld %ld %ld %ld\n", lastlayer, 
+							x1/DBUNITS, y1/DBUNITS, x2/DBUNITS, y2/DBUNITS);
+				}else{
+					fprintf(optr, "%d %f %f %f %f\n", lastlayer, 
+							((float)x1)/DBUNITS, ((float)y1)/DBUNITS, ((float)x2)/DBUNITS, ((float)y2)/DBUNITS);
+				}
+				fflush(optr);
+			}else{
+				write_gds_pixels(optr, lastlayer, x1, y1, x2, y2);
+			}
 		}
 	}
 
-	write_gds_endstr(optr);
-	write_gds_endlib(optr);
+	if(optr != stdout){
+		write_gds_endstr(optr);
+		write_gds_endlib(optr);
+	}
 
 	fclose(optr);
 
-	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
-	fclose(fp);
+	readpng_cleanup(TRUE);
 
 	return 0;
 }
+
 
 void printusage()
 {
@@ -187,10 +184,16 @@ void printusage()
 
 int main(int argc, char* argv[])
 {
+	png_byte *image_data = NULL;
+
 	if(argc!=4){
 		printusage();
 		return 1;
 	}
+	image_data = read_png(argv[1]);
+	if(image_data){
+		return write_output(image_data, argv[2], atof(argv[3]));
+	}
 
-	return write_gds(argv[1], argv[2], atof(argv[3]));
+	return 1;
 }
