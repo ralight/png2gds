@@ -1,0 +1,4 @@
+syntax: glob
+
+*.o
+png2gds
