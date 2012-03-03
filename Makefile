@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-I/usr/include/libpng12 -Wall -ggdb
+CFLAGS=-I/usr/include/libpng12 -Wall -ggdb -fno-common -Wall -Wdeclaration-after-statement -Wextra -Wformat=2 -Winit-self -Winline -Wpacked -Wp,-D_FORTIFY_SOURCE=2 -Wpointer-arith -Wlarger-than-65500 -Wmissing-declarations -Wmissing-format-attribute -Wmissing-noreturn -Wmissing-prototypes -Wnested-externs -Wold-style-definition -Wredundant-decls -Wsign-compare -Wstrict-aliasing=2 -Wstrict-prototypes -Wswitch-enum -Wundef -Wunreachable-code -Wwrite-strings
 LIBS=-lpng12 -lm
 LDFLAGS=
 VERSION=20070807

@@ -31,11 +31,14 @@
 #define PNG2GDS_VERSION "20070827"
 #define DBUNITS 1000
 
+void printusage(void);
+png_byte *read_png(const char *infile);
+int write_output(png_byte *image_data, const char *outfile, float grid);
+
 png_uint_32 width, height;
 
 png_byte *read_png(const char *infile)
 {
-	png_byte bg_red, bg_green, bg_blue;
 	int channels;
 	png_uint_32 row_bytes;
 	png_byte *image_data = NULL;
@@ -76,6 +79,11 @@ png_byte *read_png(const char *infile)
 int write_output(png_byte *image_data, const char *outfile, float grid)
 {
 	FILE *optr;
+	unsigned long x, y;
+	unsigned long x1, x2, y1, y2;
+	char first = 1;
+	png_byte lastlayer, thislayer;
+	char in_el = 0;
 
 	if(!strcmp(outfile, "stdout")){
 		optr = stdout;
@@ -87,13 +95,6 @@ int write_output(png_byte *image_data, const char *outfile, float grid)
 			return -1;
 		}
 	}
-
-
-	unsigned long x, y;
-	unsigned long x1, x2, y1, y2;
-	char first = 1;
-	png_byte lastlayer, thislayer;
-	char in_el = 0;
 
 	for(y = 0; y < height; y++){
 		first = 1;
@@ -167,7 +168,7 @@ int write_output(png_byte *image_data, const char *outfile, float grid)
 }
 
 
-void printusage()
+void printusage(void)
 {
 	printf("png2gds  version %s\n", VERSION);
 	printf("Copyright (C) 2007 by Roger Light\nhttp://atchoo.org/tools/png2gds/\n\n");
