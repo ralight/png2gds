@@ -73,15 +73,6 @@ int  bit_depth, color_type;
 uch  *image_data = NULL;
 
 
-void readpng_version_info(void)
-{
-    fprintf(stderr, "   Compiled with libpng %s; using libpng %s.\n",
-      PNG_LIBPNG_VER_STRING, png_libpng_ver);
-    fprintf(stderr, "   Compiled with zlib %s; using zlib %s.\n",
-      ZLIB_VERSION, zlib_version);
-}
-
-
 /* return value = 0 for success, 1 for bad sig, 2 for bad IHDR, 4 for no mem */
 
 int readpng_init(FILE *infile, ulg *pWidth, ulg *pHeight)
