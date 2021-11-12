@@ -1,8 +1,8 @@
 CC=gcc
-CFLAGS=-I/usr/include/libpng16 -Wall -ggdb
-LIBS=-lpng16 -lm -lz
-LDFLAGS=
-VERSION=20070807
+CFLAGS=-I/usr/include/libpng -Wall -ggdb -Wextra -O2 -flto
+LIBS=-lpng
+LDFLAGS=-flto
+VERSION=20211104
 DISTDIR=${OUT}-${VERSION}
 prefix=/usr/local
 
@@ -19,7 +19,10 @@ readpng.o : readpng.c readpng.h
 	$(CC) -DVERSION=\"$(VERSION)\" $(CFLAGS) -c $< -o $@
 
 install: png2gds
+	install -d "${DESTDIR}$(prefix)/bin"
 	install -s png2gds ${DESTDIR}${prefix}/bin/png2gds
+	install -d "${DESTDIR}$(prefix)/share/man/man1"
+	install -m644 png2gds.1 ${DESTDIR}${prefix}/share/man/man1/png2gds.1
 
 dist: png2gds
 	rm -rf ${DISTDIR}

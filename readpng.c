@@ -59,31 +59,26 @@
 #include "png.h"        /* libpng header; includes zlib.h */
 #include "readpng.h"    /* typedefs, common macros, public prototypes */
 
-/* future versions of libpng will provide this macro: */
-#ifndef png_jmpbuf
-#  define png_jmpbuf(png_ptr)   ((png_ptr)->jmpbuf)
-#endif
-
-
 static png_structp png_ptr = NULL;
 static png_infop info_ptr = NULL;
 
-png_uint_32  width, height;
-int  bit_depth, color_type;
-uch  *image_data = NULL;
+static int  bit_depth, color_type;
+static uint8_t  *image_data = NULL;
 
 
 /* return value = 0 for success, 1 for bad sig, 2 for bad IHDR, 4 for no mem */
 
-int readpng_init(FILE *infile, ulg *pWidth, ulg *pHeight)
+int readpng_init(FILE *infile, png_uint_32 *pWidth, png_uint_32 *pHeight)
 {
-    uch sig[8];
+    uint8_t sig[8];
 
 
     /* first do a quick check that the file really is a PNG image; could
      * have used slightly more general png_sig_cmp() function instead */
 
-    fread(sig, 1, 8, infile);
+    if(fread(sig, 1, 8, infile) != 8){
+		return 1;
+	}
     if (!png_check_sig(sig, 8))
         return 1;   /* bad signature */
 
@@ -125,10 +120,8 @@ int readpng_init(FILE *infile, ulg *pWidth, ulg *pHeight)
      * etc., but want bit_depth and color_type for later [don't care about
      * compression_type and filter_type => NULLs] */
 
-    png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type,
+    png_get_IHDR(png_ptr, info_ptr, pWidth, pHeight, &bit_depth, &color_type,
       NULL, NULL, NULL);
-    *pWidth = width;
-    *pHeight = height;
 
 
     /* OK, that's all we need for now; return happy */
@@ -142,7 +135,7 @@ int readpng_init(FILE *infile, ulg *pWidth, ulg *pHeight)
 /* returns 0 if succeeds, 1 if fails due to no bKGD chunk, 2 if libpng error;
  * scales values to 8-bit if necessary */
 
-int readpng_get_bgcolor(uch *red, uch *green, uch *blue)
+int readpng_get_bgcolor(uint8_t *red, uint8_t *green, uint8_t *blue)
 {
     png_color_16p pBackground;
 
@@ -181,9 +174,9 @@ int readpng_get_bgcolor(uch *red, uch *green, uch *blue)
         else /* bit_depth == 4 */
             *red = *green = *blue = (255/15) * pBackground->gray;
     } else {
-        *red   = (uch)pBackground->red;
-        *green = (uch)pBackground->green;
-        *blue  = (uch)pBackground->blue;
+        *red   = (uint8_t)pBackground->red;
+        *green = (uint8_t)pBackground->green;
+        *blue  = (uint8_t)pBackground->blue;
     }
 
     return 0;
@@ -192,9 +185,7 @@ int readpng_get_bgcolor(uch *red, uch *green, uch *blue)
 
 
 
-/* display_exponent == LUT_exponent * CRT_exponent */
-
-uch *readpng_get_image(double display_exponent, int *pChannels, ulg *pRowbytes)
+uint8_t *readpng_get_image(int *pChannels, png_uint_32 *pRowbytes, png_uint_32 height)
 {
     png_uint_32  i, rowbytes;
     png_bytepp  row_pointers = NULL;
@@ -237,7 +228,7 @@ uch *readpng_get_image(double display_exponent, int *pChannels, ulg *pRowbytes)
     *pRowbytes = rowbytes = png_get_rowbytes(png_ptr, info_ptr);
     *pChannels = (int)png_get_channels(png_ptr, info_ptr);
 
-    if ((image_data = (uch *)malloc(rowbytes*height)) == NULL) {
+    if ((image_data = (uint8_t *)malloc(rowbytes*height)) == NULL) {
         png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
         return NULL;
     }
@@ -247,9 +238,6 @@ uch *readpng_get_image(double display_exponent, int *pChannels, ulg *pRowbytes)
         image_data = NULL;
         return NULL;
     }
-
-    Trace((stderr, "readpng_get_image:  channels = %d, rowbytes = %ld, height = %ld\n", *pChannels, rowbytes, height));
-
 
     /* set the individual row_pointers to point at the correct offsets */
 
@@ -274,12 +262,10 @@ uch *readpng_get_image(double display_exponent, int *pChannels, ulg *pRowbytes)
 }
 
 
-void readpng_cleanup(int free_image_data)
+void readpng_cleanup(void)
 {
-    if (free_image_data && image_data) {
-        free(image_data);
-        image_data = NULL;
-    }
+	free(image_data);
+	image_data = NULL;
 
     if (png_ptr && info_ptr) {
         png_destroy_read_struct(&png_ptr, &info_ptr, NULL);

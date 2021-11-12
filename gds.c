@@ -19,232 +19,10 @@
  */
 #include <stdio.h>
 #include <assert.h>
+#include <stdint.h>
 #include "gds.h"
 
-void write_gds_all_header(FILE *optr)
-{
-	assert(optr);
-
-	write_gds_header(optr);
-	write_gds_bgnlib(optr);
-	write_gds_libname(optr);
-
-	fputc(0x00, optr);
-	fputc(0x14, optr);
-	fputc(0x03, optr); // UNITS
-	fputc(0x05, optr); // eight byte real
-
-	fputc(0x3E, optr);
-	fputc(0x41, optr);
-	fputc(0x89, optr);
-	fputc(0x37, optr);
-	fputc(0x4B, optr);
-	fputc(0xC6, optr);
-	fputc(0xA7, optr);
-	fputc(0xF0, optr);
-
-	fputc(0x39, optr);
-	fputc(0x44, optr);
-	fputc(0xB8, optr);
-	fputc(0x2F, optr);
-	fputc(0xA0, optr);
-	fputc(0x9B, optr);
-	fputc(0x5A, optr);
-	fputc(0x54, optr);
-
-	write_gds_bgnstr(optr);
-	write_gds_strname(optr);
-}
-
-
-void write_gds_bgnlib(FILE *optr)
-{
-	assert(optr);
-
-	fputc(0x00, optr);
-	fputc(0x1C, optr); // 28 bytes long
-	fputc(0x01, optr); // BGNLIB
-	fputc(0x02, optr); // two byte int
-	fputc(0x07, optr);
-	fputc(0xd1, optr);
-	fputc(0x00, optr);
-	fputc(0x04, optr);
-	fputc(0x00, optr);
-	fputc(0x13, optr);
-	fputc(0x00, optr);
-	fputc(0x0f, optr);
-	fputc(0x00, optr);
-	fputc(0x33, optr);
-	fputc(0x00, optr);
-	fputc(0x26, optr);
-	fputc(0x07, optr);
-	fputc(0xd5, optr);
-	fputc(0x00, optr);
-	fputc(0x02, optr);
-	fputc(0x00, optr);
-	fputc(0x12, optr);
-	fputc(0x00, optr);
-	fputc(0x0f, optr);
-	fputc(0x00, optr);
-	fputc(0x2a, optr);
-	fputc(0x00, optr);
-	fputc(0x09, optr);
-}
-
-void write_gds_bgnstr(FILE *optr)
-{
-	assert(optr);
-
-	fputc(0x00, optr);
-	fputc(0x1C, optr); // 28 bytes long
-	fputc(0x05, optr); // BGNSTR
-	fputc(0x02, optr); 
-	fputc(0x00, optr);
-	fputc(0x64, optr);
-	fputc(0x00, optr);
-	fputc(0x05, optr);
-	fputc(0x00, optr);
-	fputc(0x02, optr);
-	fputc(0x00, optr);
-	fputc(0x0f, optr);
-	fputc(0x00, optr);
-	fputc(0x28, optr);
-	fputc(0x00, optr);
-	fputc(0x38, optr);
-	fputc(0x07, optr);
-	fputc(0xD5, optr);
-	fputc(0x00, optr);
-	fputc(0x02, optr);
-	fputc(0x00, optr);
-	fputc(0x12, optr);
-	fputc(0x00, optr);
-	fputc(0x0f, optr);
-	fputc(0x00, optr);
-	fputc(0x2a, optr);
-	fputc(0x00, optr);
-	fputc(0x09, optr);
-}
-
-void write_gds_pixels(FILE *optr, unsigned char layer, unsigned long x1, unsigned long y1, unsigned long x2, unsigned long y2)
-{
-	assert(optr);
-
-	fputc(0x00, optr);
-	fputc(0x04, optr); // 4 bytes long
-	fputc(0x08, optr); // BOUNDARY
-	fputc(0x00, optr); // no data
-
-	fputc(0x00, optr);
-	fputc(0x06, optr); // 6 bytes long
-	fputc(0x0D, optr); // LAYER
-	fputc(0x02, optr); // two byte int
-	fputc(0x00, optr);
-	fputc(layer, optr);
-
-	fputc(0x00, optr);
-	fputc(0x06, optr); // 6 bytes long
-	fputc(0x0E, optr); // DATATYPE
-	fputc(0x02, optr); // two byte int
-	fputc(0x00, optr);
-	fputc(0x00, optr);
-
-	fputc(0x00, optr);
-	fputc(44, optr); // 44 bytes long
-	fputc(0x10, optr); // XY
-	fputc(0x03, optr); // four byte int
-
-	write_gds_ulong(optr, x1);
-	write_gds_ulong(optr, y1);
-
-	write_gds_ulong(optr, x1);
-	write_gds_ulong(optr, y2);
-
-	write_gds_ulong(optr, x2);
-	write_gds_ulong(optr, y2);
-
-	write_gds_ulong(optr, x2);
-	write_gds_ulong(optr, y1);
-
-	write_gds_ulong(optr, x1);
-	write_gds_ulong(optr, y1);
-
-	fputc(0x00, optr);
-	fputc(0x04, optr); // 4 bytes long
-	fputc(0x11, optr); // ENDEL
-	fputc(0x00, optr); // no data
-}
-
-void write_gds_endlib(FILE *optr)
-{
-	assert(optr);
-
-	fputc(0x00, optr);
-	fputc(0x04, optr); // 4 bytes long
-	fputc(0x04, optr); // ENDLIB
-	fputc(0x00, optr); // no data
-}
-
-void write_gds_endstr(FILE *optr)
-{
-	assert(optr);
-
-	fputc(0x00, optr);
-	fputc(0x04, optr); // 4 bytes long
-	fputc(0x07, optr); // ENDSTR
-	fputc(0x00, optr); // no data
-}
-
-void write_gds_header(FILE *optr)
-{
-	assert(optr);
-
-	fputc(0x00, optr);
-	fputc(0x06, optr); // 6 bytes long
-	fputc(0x00, optr); // HEADER
-	fputc(0x02, optr); // two byte int
-	fputc(0x00, optr);
-	fputc(0x07, optr); // version 600
-}
-
-void write_gds_libname(FILE *optr)
-{
-	assert(optr);
-
-	fputc(0x00, optr);
-	fputc(0x0E, optr);
-	fputc(0x02, optr); // LIBNAME
-	fputc(0x06, optr); // ascii string
-	fputc('P', optr);
-	fputc('N', optr);
-	fputc('G', optr);
-	fputc('2', optr);
-	fputc('G', optr);
-	fputc('D', optr);
-	fputc('S', optr);
-	fputc('.', optr);
-	fputc('D', optr);
-	fputc('B', optr);
-}
-
-void write_gds_strname(FILE *optr)
-{
-	assert(optr);
-
-	fputc(0x00, optr);
-	fputc(0x0C, optr); // 11 bytes long
-	fputc(0x06, optr); // STRNAME
-	fputc(0x06, optr); // ascii string
-	fputc('p', optr);
-	fputc('n', optr);
-	fputc('g', optr);
-	fputc('2', optr);
-	fputc('g', optr);
-	fputc('d', optr);
-	fputc('s', optr);
-	fputc('\0', optr);
-}
-
-void write_gds_ulong(FILE *optr, unsigned long num)
+static void gds_write_ulong(FILE *optr, unsigned long num)
 {
 	unsigned char a, b, c, d;
 
@@ -261,3 +39,126 @@ void write_gds_ulong(FILE *optr, unsigned long num)
 	fputc(a, optr);
 }
 
+void gds_write_start(FILE *optr)
+{
+	const uint8_t gds_header[] = {
+		0x00, 0x06, // 6 bytes long
+		0x00, // HEADER
+		0x02, // two byte int
+		0x00, 0x07, // version 600
+	};
+	const uint8_t gds_bgnlib[] = {
+		0x00, 0x1C, // 28 bytes long
+		0x01, // BGNLIB
+		0x02, // two byte int
+		0x07, 0xd1, 0x00, 0x04, 0x00, 0x13, 0x00, 0x0f,
+		0x00, 0x33, 0x00, 0x26, 0x07, 0xd5, 0x00, 0x02,
+		0x00, 0x12, 0x00, 0x0f, 0x00, 0x2a, 0x00, 0x09
+	};
+	const uint8_t gds_libname[] = {
+		0x00, 0x0E, // 14 bytes long
+		0x02, // LIBNAME
+		0x06, // ascii string
+		'P', 'N', 'G', '2', 'G', 'D', 'S', '.', 'D', 'B'
+	};
+	const uint8_t gds_units[] = {
+		0x00, 0x14, // 14 bytes long
+		0x03, // UNITS
+		0x05, // eight byte real
+		0x3E, 0x41, 0x89, 0x37, 0x4B, 0xC6, 0xA7, 0xF0,
+		0x39, 0x44, 0xB8, 0x2F, 0xA0, 0x9B, 0x5A, 0x54,
+	};
+	const uint8_t gds_bgnstr[] = {
+		0x00, 0x1C, // 28 bytes long
+		0x05, // BGNSTR
+		0x02, 0x00, 0x64, 0x00, 0x05, 0x00, 0x02, 0x00, 0x0f,
+		0x00, 0x28, 0x00, 0x38, 0x07, 0xD5, 0x00, 0x02, 0x00,
+		0x12, 0x00, 0x0f, 0x00, 0x2a, 0x00, 0x09
+	};
+	const uint8_t gds_strname[] = {
+		0x00, 0x0C, // 11 bytes long
+		0x06, // STRNAME
+		0x06, // ascii string
+		'p', 'n', 'g', '2', 'g', 'd', 's', '\0',
+	};
+
+	fwrite(gds_header, sizeof(gds_header), 1, optr);
+	fwrite(gds_bgnlib, sizeof(gds_bgnlib), 1, optr);
+	fwrite(gds_libname, sizeof(gds_libname), 1, optr);
+	fwrite(gds_units, sizeof(gds_units), 1, optr);
+	fwrite(gds_bgnstr, sizeof(gds_bgnstr), 1, optr);
+	fwrite(gds_strname, sizeof(gds_strname), 1, optr);
+}
+
+void gds_write_pixel(FILE *optr, uint8_t layer, unsigned long x1, unsigned long y1, unsigned long x2, unsigned long y2)
+{
+	const uint8_t gds_boundary[] = {
+		0x00, 0x04, // 4 bytes long
+		0x08, // BOUNDARY
+		0x00, // no data
+	};
+	const uint8_t gds_layer[] = {
+		0x00, 0x06, // 6 bytes long
+		0x0D, // LAYER
+		0x02, // two byte int
+		0x00, // first byte only, second is 'layer'
+	};
+	const uint8_t gds_datatype[] = {
+		0x00, 0x06, // 6 bytes long
+		0x0E, // DATATYPE
+		0x02, // two byte int
+		0x00, 0x00 // 0
+	};
+	const uint8_t gds_xy[] = {
+		0x00, 0x2C, // 44 bytes long
+		0x10, // XY
+		0x03, // four byte int
+		// Remaining data written after
+	};
+	const uint8_t gds_endel[] = {
+		0x00, 0x04, // 4 bytes long
+		0x11, // ENDEL
+		0x00, // no data
+	};
+
+
+	fwrite(gds_boundary, sizeof(gds_boundary), 1, optr);
+	fwrite(gds_layer, sizeof(gds_layer), 1, optr);
+	fputc(layer, optr); // second byte of layer 2 byte int
+	fwrite(gds_datatype, sizeof(gds_datatype), 1, optr);
+	fwrite(gds_xy, sizeof(gds_xy), 1, optr);
+
+	gds_write_ulong(optr, x1);
+	gds_write_ulong(optr, y1);
+
+	gds_write_ulong(optr, x1);
+	gds_write_ulong(optr, y2);
+
+	gds_write_ulong(optr, x2);
+	gds_write_ulong(optr, y2);
+
+	gds_write_ulong(optr, x2);
+	gds_write_ulong(optr, y1);
+
+	gds_write_ulong(optr, x1);
+	gds_write_ulong(optr, y1);
+
+	fwrite(gds_endel, sizeof(gds_endel), 1, optr);
+}
+
+void gds_write_end(FILE *optr)
+{
+	const uint8_t gds_endstr[] = {
+		0x00, 0x04, // 4 bytes long
+		0x07, // ENDSTR
+		0x00, // no data
+	};
+	const uint8_t gds_endlib[] = {
+		0x00, 0x04, // 4 bytes long
+		0x04, // ENDLIB
+		0x00, // no data
+	};
+
+	fwrite(gds_endstr, sizeof(gds_endstr), 1, optr);
+	fwrite(gds_endlib, sizeof(gds_endlib), 1, optr);
+}

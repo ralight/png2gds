@@ -23,22 +23,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <png.h>
 #include "gds.h"
 #include "readpng.h"
 
-#define ERROR 1
-#define PNG2GDS_VERSION "20070827"
 #define DBUNITS 1000
 
-void printusage(void);
-png_byte *read_png(const char *infile);
-int write_output(png_byte *image_data, const char *outfile, float grid);
+static void print_usage(void);
 
-png_uint_32 width, height;
-
-png_byte *read_png(const char *infile)
+static png_byte *read_png(const char *infile, png_uint_32 *width, png_uint_32 *height)
 {
 	int channels;
 	png_uint_32 row_bytes;
@@ -50,7 +43,7 @@ png_byte *read_png(const char *infile)
 		return NULL;
 	}
 
-	if(readpng_init(fp, &width, &height)){
+	if(readpng_init(fp, width, height)){
 		fclose(fp);
 		return NULL;
 	}
@@ -64,7 +57,7 @@ png_byte *read_png(const char *infile)
 	}
 #endif
 
-	image_data = readpng_get_image(1.0, &channels, &row_bytes);
+	image_data = readpng_get_image(&channels, &row_bytes, *height);
 	if(!image_data){
 		printf("Invalid png file.\n");
 		fclose(fp);
@@ -77,7 +70,7 @@ png_byte *read_png(const char *infile)
 }
 
 
-int write_output(png_byte *image_data, const char *outfile, float grid)
+static int write_output(png_byte *image_data, const char *outfile, float grid, png_uint_32 width, png_uint_32 height)
 {
 	FILE *optr;
 	unsigned long x, y;
@@ -91,10 +84,11 @@ int write_output(png_byte *image_data, const char *outfile, float grid)
 	}else{
 		optr = fopen(outfile, "wb");
 		if(!optr){
-			readpng_cleanup(TRUE);
+			readpng_cleanup();
 
 			return -1;
 		}
+		gds_write_start(optr);
 	}
 
 	for(y = 0; y < height; y++){
@@ -106,18 +100,17 @@ int write_output(png_byte *image_data, const char *outfile, float grid)
 				if(lastlayer != 255){
 					x2 = x * DBUNITS * grid;
 					if(optr == stdout){
-						usleep(50);
 						if(fabs(grid - 1.0) < 0.01){
-							fprintf(optr, "%d %ld %ld %ld %ld\n", lastlayer, 
+							fprintf(optr, "%d %ld %ld %ld %ld\n", lastlayer,
 									x1/DBUNITS, y1/DBUNITS, x2/DBUNITS, y2/DBUNITS);
 						}else{
-							fprintf(optr, "%d %f %f %f %f\n", lastlayer, 
+							fprintf(optr, "%d %f %f %f %f\n", lastlayer,
 									((float)x1)/DBUNITS, ((float)y1)/DBUNITS, ((float)x2)/DBUNITS, ((float)y2)/DBUNITS);
 						}
 						fflush(optr);
 
 					}else{
-						write_gds_pixels(optr, lastlayer, x1, y1, x2, y2);
+						gds_write_pixel(optr, lastlayer, x1, y1, x2, y2);
 					}
 					in_el = 0;
 				}
@@ -141,45 +134,49 @@ int write_output(png_byte *image_data, const char *outfile, float grid)
 		if(in_el){
 			x2 = x * DBUNITS * grid;
 			if(optr == stdout){
-				usleep(50);
 				if(fabs(grid - 1.0) < 0.01){
-					fprintf(optr, "%d %ld %ld %ld %ld\n", lastlayer, 
+					fprintf(optr, "%d %ld %ld %ld %ld\n", lastlayer,
 							x1/DBUNITS, y1/DBUNITS, x2/DBUNITS, y2/DBUNITS);
 				}else{
-					fprintf(optr, "%d %f %f %f %f\n", lastlayer, 
+					fprintf(optr, "%d %f %f %f %f\n", lastlayer,
 							((float)x1)/DBUNITS, ((float)y1)/DBUNITS, ((float)x2)/DBUNITS, ((float)y2)/DBUNITS);
 				}
 				fflush(optr);
 			}else{
-				write_gds_pixels(optr, lastlayer, x1, y1, x2, y2);
+				gds_write_pixel(optr, lastlayer, x1, y1, x2, y2);
 			}
 		}
 	}
 
 	if(optr != stdout){
-		write_gds_endstr(optr);
-		write_gds_endlib(optr);
+		gds_write_end(optr);
 	}
 
 	fclose(optr);
 
-	readpng_cleanup(TRUE);
+	readpng_cleanup();
 
 	return 0;
 }
 
 
-void printusage(void)
+static void print_usage(void)
 {
 	printf("png2gds  version %s\n", VERSION);
 	printf("Copyright (C) 2007 by Roger Light\nhttp://atchoo.org/tools/png2gds/\n\n");
-	printf("png2gds comes with ABSOLUTELY NO WARRANTY.  You may distribute png2gds freely\nas described in the readme.txt distributed with this file.\n\n");
-	printf("png2gds is a program for converting a PNG image file to a GDS2 file. Each pixel in the image that is not the background colour will be represented as a square in the GDS2 file which means that the resulting file will be quite large. Merging the squares into a single shape in your CAD software will remove this issue.\n\n");
+	printf("png2gds comes with ABSOLUTELY NO WARRANTY.  You may distribute png2gds freely\n");
+	printf("as described in the readme.txt distributed with this file.\n\n");
+	printf("png2gds is a program for converting a PNG image file to a GDS2 file. Each pixel\n");
+	printf("in the image that is not the background colour will be represented as a square\n");
+	printf("in the GDS2 file which means that the resulting file will be quite large.\n");
+	printf("Merging the squares into a single shape in your CAD software will remove this\n");
+	printf("issue.\n\n");
 	printf("Usage: png2gds input.png output.gds grid\n\n");
 	printf("Arguments\n");
-	printf(" input.png\tThe file to convert into GDS2 format. Indexed palettes are best!\n");
-	printf(" output.gds\tThe output file.\n");
-	printf(" grid\t\tFloating point number giving the size in microns that each pixel on the image will be.\n");
+	printf(" input.png    The file to convert into GDS2 format. Must use an indexed palette.\n");
+	printf(" output.gds   The output file.\n");
+	printf(" grid         Floating point number giving the size in microns that each pixel\n");
+	printf("              on the image will be.\n");
 	printf("\nSee http://atchoo.org/tools/png2gds/ for updates.\n");
 }
 
@@ -187,14 +184,15 @@ void printusage(void)
 int main(int argc, char* argv[])
 {
 	png_byte *image_data = NULL;
+	png_uint_32 width, height;
 
-	if(argc!=4){
-		printusage();
+	if(argc != 4){
+		print_usage();
 		return 1;
 	}
-	image_data = read_png(argv[1]);
+	image_data = read_png(argv[1], &width, &height);
 	if(image_data){
-		return write_output(image_data, argv[2], atof(argv[3]));
+		return write_output(image_data, argv[2], atof(argv[3]), width, height);
 	}
 
 	return 1;

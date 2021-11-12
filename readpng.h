@@ -53,36 +53,14 @@
 
   ---------------------------------------------------------------------------*/
 
-#ifndef TRUE
-#  define TRUE 1
-#  define FALSE 0
-#endif
-
-#ifndef MAX
-#  define MAX(a,b)  ((a) > (b)? (a) : (b))
-#  define MIN(a,b)  ((a) < (b)? (a) : (b))
-#endif
-
-#ifdef DEBUG
-#  define Trace(x)  {fprintf x ; fflush(stderr); fflush(stdout);}
-#else
-#  define Trace(x)  ;
-#endif
-
-typedef unsigned char   uch;
-typedef unsigned short  ush;
-typedef unsigned long   ulg;
-
+#include <stdint.h>
 
 /* prototypes for public functions in readpng.c */
 
-void readpng_version_info(void);
+int readpng_init(FILE *infile, png_uint_32 *pWidth, png_uint_32 *pHeight);
 
-int readpng_init(FILE *infile, ulg *pWidth, ulg *pHeight);
+int readpng_get_bgcolor(uint8_t *bg_red, uint8_t *bg_green, uint8_t *bg_blue);
 
-int readpng_get_bgcolor(uch *bg_red, uch *bg_green, uch *bg_blue);
+uint8_t *readpng_get_image(int *pChannels, png_uint_32 *pRowbytes, png_uint_32 height);
 
-uch *readpng_get_image(double display_exponent, int *pChannels,
-                       ulg *pRowbytes);
-
-void readpng_cleanup(int free_image_data);
+void readpng_cleanup(void);

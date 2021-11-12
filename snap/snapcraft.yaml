@@ -1,0 +1,31 @@
+name: png2gds
+base: core20
+version: '20211104'
+summary: convert png images into gds2 data for import into EDA design software
+description: |
+  Convert png images to gds2 files for import into EDA design software.
+
+grade: stable
+confinement: strict
+
+apps:
+  png2gds:
+    command: usr/bin/png2gds
+    plugs: [home]
+
+parts:
+  png2gds:
+    plugin: make
+    make-parameters: ["prefix=/usr"]
+    source: .
+
+    build-packages:
+      - gcc
+      - g++
+      - libpng-dev
+    prime:
+      - usr/bin/png2gds
+      - usr/share/man/man1/png2gds.1
+      - usr/lib/*/libpng*
+    stage-packages:
+      - libpng16-16

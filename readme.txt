@@ -1,4 +1,4 @@
-png2gds 20070827
+png2gds 20211104
 ================
 
 png2gds attempts to convert indexed png files to a gds2 file, with palette

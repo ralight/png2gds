@@ -23,15 +23,8 @@
 
 #include <stdio.h>
 
-void write_gds_all_header(FILE *optr);
-void write_gds_bgnlib(FILE *optr);
-void write_gds_bgnstr(FILE *optr);
-void write_gds_pixels(FILE *optr, unsigned char layer, unsigned long x1, unsigned long y1, unsigned long x2, unsigned long y2);
-void write_gds_endlib(FILE *optr);
-void write_gds_endstr(FILE *optr);
-void write_gds_header(FILE *optr);
-void write_gds_libname(FILE *optr);
-void write_gds_strname(FILE *optr);
-void write_gds_ulong(FILE *optr, unsigned long num);
+void gds_write_start(FILE *optr);
+void gds_write_pixel(FILE *optr, unsigned char layer, unsigned long x1, unsigned long y1, unsigned long x2, unsigned long y2);
+void gds_write_end(FILE *optr);
 
 #endif
